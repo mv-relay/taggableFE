@@ -1,204 +1,410 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <title></title>
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+<title></title>
 
-    <style>
-      .angular-google-map-container {
-          width: 100%;
-          height: 504px;
-      }
-    </style>
+<style>
+.angular-google-map-container {
+	width: 100%;
+	height: 100%;
+}
+.scroll {
+  height: 100%;
+}
+</style>
+<style>
+.deselect {
+	opacity: .3;
+}
 
-    <link href="/css/preview-frame.css" rel="stylesheet">
-    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+.slider {
+	height: 100%;
+}
 
-    <!-- ionic/angularjs js -->
-    <script src="lib/ionic/js/ionic.bundle.js"></script>
+.slider-slide {
+	padding-top: 80px;
+	color: #000;
+	background-color: #fff;
+	text-align: center;
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light",
+		"Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+	font-weight: 300;
+}
 
-    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
-    <link href="css/ionic.app.css" rel="stylesheet">
-    -->
+.details {
+	float: left;
+	font-size: 1em;
+	text-align: center;
+	padding: 2%;
+	background-color: #fff;
+}
+
+.image {
+	float: left;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: bottom left;
+}
+
+.responsive {
+	height: 275px;
+	width: 25%;
+	box-shadow: 0 0 0 5px white inset;
+}
+
+.gridRepeats:nth-child(4n+1),.gridRepeats:nth-child(4n+2) { .details {
+	background-color:#9CD8D8;
+	
+}
+}
+</style>
+
+<style>
+
+#map_canvas {
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+        }
+
+        #map_canvas {
+            position: relative;
+        }
+
+        .angular-google-map-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+        }
+</style>
+<link href="/css/preview-frame.css" rel="stylesheet">
+<link href="lib/ionic/css/ionic.css" rel="stylesheet">
+<!-- ionic/angularjs js -->
+<script src="lib/ionic/js/ionic.bundle.js"></script>
+<script src="http://code.ionicframework.com/1.0.0-beta.4/js/angular/angular-resource.min.js"></script>
+<script src="cordova.js"></script>
+<script src="lib/ngCordova/dist/ng-cordova.js"></script>
+
+<script src="js/map.js"></script>
+<script src="js/ngTaggable.js"></script>
+<script src="js/ngTaggableCordova.js"></script>
+
+<script src='http://maps.googleapis.com/maps/api/js?sensor=false'></script>
+<script src='lib/lodash/dist/lodash.min.js'></script>
+<script src='lib/bluebird/js/browser/bluebird.js'></script>
+<script src='lib/angular-google-maps/dist/angular-google-maps.min.js'></script>
 
 
-    <script>
-// Ionic Starter App
-
-// angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
-// the 2nd parameter is an array of 'requires'
-// 'starter.services' is found in services.js
-// 'starter.controllers' is found in controllers.js
-angular.module('app', ['ionic'])
-
-.run(function($ionicPlatform) {
-  $ionicPlatform.ready(function() {
-    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-    // for form inputs)
-    if(window.cordova && window.cordova.plugins.Keyboard) {
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-    }
-    if(window.StatusBar) {
-      // org.apache.cordova.statusbar required
-      StatusBar.styleDefault();
-    }
-  });
-})
-.controller('MainCtrl', function($scope, $ionicSideMenuDelegate) {
-  
-  $scope.mainCtrl = {};
-  $scope.leftButtons = [{
-    type: 'button-icon button-clear ion-navicon',
-    tap: function(e) {
-      $ionicSideMenuDelegate.toggleLeft($scope.$$childHead);
-    }
-  }];
-  
-  $scope.mainCtrl.showFeature = false;
-  
-})
-.config(function($stateProvider, $urlRouterProvider) {
-
-  // Ionic uses AngularUI Router which uses the concept of states
-  // Learn more here: https://github.com/angular-ui/ui-router
-  // Set up the various states which the app can be in.
-  // Each state's controller can be found in controllers.js
-  $stateProvider
-    
-    .state('page8', {
-      url: '/tabs',
-      templateUrl: 'page8.html'
-    })
-    ;
-
-  // if none of the above states are matched, use this as the fallback
-  
-  $urlRouterProvider.otherwise('/tabs');
-  
-
-});
 
 
+<!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+                         <link href="css/ionic.app.css" rel="stylesheet">
+                         -->
+
+
+<script>
+	// Ionic Starter App
+
+	// angular.module is a global place for creating, registering and retrieving Angular modules
+	// 'starter' is the name of this angular module example (also set in a <body class="platform-ios platform-cordova platform-webview"> attribute in index.html)
+	// the 2nd parameter is an array of 'requires'
+	// 'starter.services' is found in services.js
+	// 'starter.controllers' is found in controllers.js
+
+	function beacon() {
+		try {
+			var delegate = new cordova.plugins.locationManager.Delegate();
+			var uuid = '2F234454-CF6D-4A0F-ADF2-F4911BA9FFA6';
+			var identifier = 'beaconOnTheMacBooksShelf';
+			var minor = 1;
+			var major = 100;
+			var beaconRegion = new cordova.plugins.locationManager.BeaconRegion(
+					identifier, uuid, major, minor);
+
+			delegate.didRangeBeaconsInRegion = function(pluginResult) {
+				console.log('[DOM] didRangeBeaconsInRegion: '
+						+ JSON.stringify(pluginResult));
+				alert("InRegion")
+			};
+			delegate.didDetermineStateForRegion = function(pluginResult) {
+				console.log('[DOM] didDetermineStateForRegion: '
+						+ JSON.stringify(pluginResult));
+				alert("StateForRegion");
+			};
+			delegate.didStartMonitoringForRegion = function(pluginResult) {
+				alert("StartMonitoring");
+			}
+
+			cordova.plugins.locationManager.setDelegate(delegate);
+			cordova.plugins.locationManager.startRangingBeaconsInRegion(
+					beaconRegion).fail(console.error).done();
+		} catch (e) {
+			alert(e);
+		}
+	}
+
+	angular.module('app', ['ionic','map','taggableCordova'])
+
+	.run(function($ionicPlatform) {
+		$ionicPlatform.ready(function() {
+			// Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
+			// for form inputs)
+			if (window.cordova && window.cordova.plugins.Keyboard) {
+				cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+			}
+			if (window.StatusBar) {
+				// org.apache.cordova.statusbar required
+				StatusBar.styleDefault();
+			}
+
+			//  beacon();
+		});
+	})
+
+	.config(function($stateProvider, $urlRouterProvider) {
+
+		// Ionic uses AngularUI Router which uses the concept of states
+		// Learn more here: https://github.com/angular-ui/ui-router
+		// Set up the various states which the app can be in.
+		// Each state's controller can be found in controllers.js
+		$stateProvider
+
+		 .state('tabs', 
+			{
+		    url: "/tab",
+		    abstract: true,
+		    templateUrl: "tabs.html"
+		    })
+		 .state('profile', 
+			{
+			url: "/profile",			
+			templateUrl: "profile.html"
+			})
+		 .state('tabs.home', {
+      		url: "/home",
+      		views: 
+      			{
+        		'list-tab': 
+        			{
+          			templateUrl: "list.html",
+          			controller: 'aroundmeController'
+        			}
+      			}
+    		})
+		.state('tabs.list', 
+			{
+			url : '/list',
+			views: 
+	  			{
+	    		'list-tab': 
+	    			{
+	      			templateUrl: "list.html",
+	      			controller: 'aroundmeController'
+	    			}
+	  			}
+			})
+		.state('tabs.shot', 
+			{
+			url : '/shot',
+			views: 
+	  			{
+	    		'shot-tab': 
+	    			{
+	      			templateUrl: "shot.html",
+	      			controller: 'shotController'
+	    			}
+	  			}
+			})
+		.state('tabs.map', 
+			{
+			url : '/map',
+			views: 
+	  			{
+	    		'map-tab': 
+	    			{
+	      			templateUrl: "map.html",
+	      			controller: 'mapCtrl'
+	    			}
+	  			}
+			})
+
+		// if none of the above states are matched, use this as the fallback
+
+		$urlRouterProvider.otherwise('/tab/home');
+
+	})
+
+	
+	.directive('gridImage', function() {
+		return function($scope, element, attrs) {
+			var url = attrs.gridImage;
+			element.css({
+				'background-image' : 'url(' + url + ')',
+			});
+		}
+	}).controller("scanController", [ "$scope", function($scope) {
+
+	} ]);
+</script>
+</head>
+<body ng-app="app" animation="slide-left-right-ios7">
+	
+	<ion-side-menus> 
+		<ion-side-menu side="left">
+			<ion-header-bar class="bar-positive"><h1 class="title">Menu</h1></ion-header-bar> 
+			<ion-content padding="false" scroll="false" class="has-header">
+				<ion-list> 
+					<ion-item href="#/profile">Profile</ion-item> 
+					<ion-item href="#/tab/list">iBeacon</ion-item> 
+					<ion-item href="#/scan">Scan</ion-item>
+				</ion-list> 
+			</ion-content> 
+		</ion-side-menu> 
+		<ion-pane ion-side-menu-content=""> 
+			<ion-nav-view></ion-nav-view>
+		</ion-pane> 
+	</ion-side-menus>
+	
+	
+	<script id="tabs.html" type="text/ng-template">
+	<ion-tabs class="tabs-positive tabs-icon-only">		
+		<ion-tab icon-on="ion-ios7-location" icon-off="ion-ios7-location-outline" title="Around" href="#/tab/list">
+			 <ion-nav-view name="list-tab"></ion-nav-view>
+		</ion-tab> 
+		<ion-tab icon-on="ion-ios7-camera" icon-off="ion-ios7-camera-outline" title="Shot" href="#/tab/shot">
+			 <ion-nav-view name="shot-tab"></ion-nav-view>
+		</ion-tab> 
+		<ion-tab icon-on="ion-ios7-navigate" icon-off="ion-ios7-navigate-outline" title="Map" href="#/tab/map">
+			 <ion-nav-view name="map-tab"></ion-nav-view>
+		</ion-tab>
+	</ion-tabs>
+	</script>
+	
+	<script id="profile.html" type="text/ng-template">
+            <ion-view title="List">
+                <ion-header-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title">Profile</h1>
+                </ion-header-bar>
+                <ion-content padding="true" scroll="true">                    
+ 					<ion-list>        		     
+												
+					</ion-list>
+                </ion-content>
+            </ion-view>
     </script>
-  </head>
-  <body ng-app="app" animation="slide-left-right-ios7">
-  <div  ng-controller="MainCtrl">
-    <div>
-        <ion-nav-bar class="bar-stable">
-            <ion-nav-back-button class="button-icon icon ion-ios7-arrow-back">Back</ion-nav-back-button>
-        </ion-nav-bar>
-        <ion-nav-view animation="slide-left-right"></ion-nav-view>
-    </div>
-</div>
-<script id="page8.html" type="text/ng-template">
-<ion-view title="Taggable" left-buttons="leftButtons">
-    <ion-tabs class=" tabs-icon-top" >
-        <ion-tab title="Around" icon="ion-arrow-expand">
-            <ion-content padding="false" class="has-header" can-swipe="true" can-delete="true">
-                <ion-list>        
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                        <ion-option-button class="button-info">Edit</ion-option-button>
-    					<ion-option-button class="button-positive">Del</ion-option-button>
-    					<ion-option-button class="button-info">Share</ion-option-button>
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                        <ion-option-button class="button-info">Edit</ion-option-button>
-    					<ion-option-button class="button-positive">Del</ion-option-button>
-    					<ion-option-button class="button-info">Share</ion-option-button>                        
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                        <ion-option-button class="button-info">Edit</ion-option-button>
-    					<ion-option-button class="button-positive">Del</ion-option-button>
-    					<ion-option-button class="button-info">Share</ion-option-button>                        
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                        <ion-option-button class="button-info">Edit</ion-option-button>
-    					<ion-option-button class="button-positive">Del</ion-option-button>
-    					<ion-option-button class="button-info">Share</ion-option-button>                        
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                    </ion-item>
-                    <ion-item class="item-thumbnail-left">
-                        <img src="/img/avatar-img.png">
-                        <h2>Title</h2>
-                        <p>Item</p>
-                    </ion-item>                                        
-                </ion-list>
-            </ion-content>
-        </ion-tab>
-        <ion-tab title="Tag" icon="ion-camera">
-            <ion-content padding="true" class="has-header">
-                <form>
-                    <div style="line-height: 250px; border: 1px solid rgb(238, 238, 238); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; text-align: center; background-color: rgb(255, 255, 255);">
-                        <i class="icon ion-image" style="font-size: 64px; color: rgb(136, 136, 136); vertical-align: middle;"></i>
-                    </div>
-                    <ion-list>
-                        <label class="item item-input item-floating-label">
-                            <span class="input-label">Name</span>
-                            <input type="text" placeholder="Name">
-                        </label>
-                        <label class="item item-input">
-                            <span class="input-label">Descrizione</span><textarea placeholder="Descrizione"> </textarea>
-                        </label>
-                    </ion-list>
-                </form>
-            </ion-content>
-        </ion-tab>
-        <ion-tab title="Profile" icon="ion-android-social">
-            <ion-content padding="true" class="has-header">
-                <div class="list card">
-                    <div class="item item-divider">Massimiliano Regis</div>
-                    <div class="item item-body">
-                        <form>
-                            <div style="line-height: 250px; border: 1px solid rgb(238, 238, 238); border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; text-align: center; background-color: rgb(255, 255, 255);">
-                                <i class="icon ion-image" style="font-size: 64px; color: rgb(136, 136, 136); vertical-align: middle;"></i>
-                            </div>
-                            <label class="item item-input item-floating-label">
-                                <span class="input-label">First Name</span>
-                                <input type="text" placeholder="First Name">
-                            </label>
-                            <label class="item item-input item-floating-label">
-                                <span class="input-label">Last Name</span>
-                                <input type="text" placeholder="last name">
-                            </label>
-                        </form>
-                    </div>
-                </div>
-            </ion-content>
-        </ion-tab>
-    </ion-tabs>
-</ion-view></script>
-  </body>
+	
+	<script id="map.html" type="text/ng-template">
+            <ion-view title="List">
+                <ion-header-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title">Map</h1>
+                </ion-header-bar>
+                <ion-content>                    
+ 					<div id="map_canvas" tap-disabled="true">
+			    		<ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" bounds="map.bounds" options="map.options">
+			        		<ui-gmap-markers models="randomMarkers" coords="'self'" icon="'icon'"></ui-gmap-markers>
+			    		</ui-gmap-google-map>
+					</div>
+                </ion-content>
+            </ion-view>
+    </script>
+	<script id="shot.html" type="text/ng-template">
+            <ion-view title="List">
+                <ion-header-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title">Shot</h1>
+                </ion-header-bar>
+                <ion-content padding="true" scroll="true">                    
+ 					<div class="list card">
+
+  						<div class="item item-avatar">
+    						<img src="http://tutupash.com/site/assets/nin_logo.jpeg">
+    						<h2>Pretty Hate Machine</h2>
+    						<p>Nine Inch Nails</p>
+  						</div>
+
+  						<div class="item item-image">
+    						<img ng-src="{{files[0].url}}">
+  						</div>
+
+  						<a class="item item-icon-left assertive" href="#">
+    					<i class="icon ion-music-note"></i>Start listening</a>
+
+  <label class="item item-input">
+    <input type="text" placeholder="Name" ng-model="name">
+  </label>
+  
+<button class="button button-block button-positive" ng-click="save()">SAVE</button>
+
+					</div>
+                </ion-content>
+            </ion-view>
+    </script>
+
+	<script id="list.html" type="text/ng-template">
+            <ion-view title="List">
+                <ion-header-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title">List</h1>
+                </ion-header-bar>
+                <ion-content padding="true" scroll="true">                    
+ 					<ion-list>        		     
+						<ion-item ng-repeat="item in aroundme" class="item-thumbnail-left"><img src="{{item.img}}" style="width:200px"/><H2>{{item.name}}</h2><P>{{item.descr}}</P></ion-item>						
+					</ion-list>
+                </ion-content>
+            </ion-view>
+    </script>
+
+	<script id="iBeacon.html" type="text/ng-template">
+            <ion-view title="iBeacon">
+            	<ion-header-bar class="bar-assertive">
+		            <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+        		    <h1 class="title">iBeacon</h1>
+	            </ion-header-bar>
+    	        <ion-content padding="true" class="has-header">
+        		    <form>
+		            <label class="item item-input">
+            			<span class="input-label">UUID</span>
+			            <input type="text" placeholder="UUID">
+            		</label>
+		            </form>
+        	    </ion-content>
+	        </ion-view>
+        </script>
+
+	
+
+	<script id="scan.html" type="text/ng-template">
+            <ion-view title="Scan">
+            	<ion-header-bar class="bar-assertive">
+		            <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+        		    <h1 class="title">Barcode scan</h1>
+	            </ion-header-bar>
+
+    	        <ion-content padding="true" class="has-header">    	        
+        		    <button class="button button-full button-positive" ng-click="scan()">scan</button>
+		            <div class="list">
+						<label class="item item-input item-floating-label">
+    						<span class="input-label">Barcode</span>
+    						<input type="text" placeholder="Barcode" ng-model="code">
+						</label>
+					</div>        		    
+					<div class="gridcontainer"> 
+					<ul>
+						<li class="gridRepeats" ng-class="{deselect:!item.selected}" ng-repeat="item in list" ng-click="item.selected=!item.selected">
+							<div class="image responsive" grid-image="{{item.img}}"></div>
+							<!--div class="details responsive"  >{{grid.details}}</div-->
+						</li>
+					</ul>
+					</div>	
+        	    </ion-content>
+	        </ion-view>
+        </script>
+</body>
 </html>

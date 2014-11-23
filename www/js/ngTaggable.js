@@ -1,6 +1,6 @@
 var style=[{"featureType":"landscape","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","stylers":[{"saturation":-100},{"lightness":51},{"visibility":"simplified"}]},{"featureType":"road.highway","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"road.arterial","stylers":[{"saturation":-100},{"lightness":30},{"visibility":"on"}]},{"featureType":"road.local","stylers":[{"saturation":-100},{"lightness":40},{"visibility":"on"}]},{"featureType":"transit","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"administrative.province","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"labels","stylers":[{"visibility":"on"},{"lightness":-25},{"saturation":-100}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]}];
 
-angular.module("taggable",["ngResource","angularFileUpload","google-maps".ns()])
+angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 .constant("url","95.110.224.34:8080")
 .factory("gps",[function()
     {
@@ -16,10 +16,9 @@ angular.module("taggable",["ngResource","angularFileUpload","google-maps".ns()])
 		refresh:function(callback)
 			{
 			var act = this;
-			alert("gps..."+navigator.geolocation);
 			if (navigator.geolocation) 
 				navigator.geolocation.getCurrentPosition(function(position)
-					{        					
+					{        										
 					try{clearTimeout(time);}catch(e){}
 						
 					act.latitude=position.coords.latitude;
@@ -70,11 +69,9 @@ angular.module("taggable",["ngResource","angularFileUpload","google-maps".ns()])
 			},
 		query:function()
 			{
-			alert("1");
 			var deferred = $q.defer();			
 			gps.refresh(function()
 				{
-				alert("2");
 				$http.get("http://"+url+"/relay-service-web/rest/land",
 						{params:
 							{						
@@ -127,18 +124,49 @@ angular.module("taggable",["ngResource","angularFileUpload","google-maps".ns()])
 	$scope.state = $images.state; 
 	$scope.user=user;
     }])
-.controller("loginController",["$scope","user",function($scope,user)
+.controller("loginController",["$cordovaVibration","$scope","user",function($cordovaVibration,$scope,user)
     {
 	$scope.my=function(mail,name)
 		{		
+		$cordovaVibration.vibrate(100);
 		user.mail=mail;
 		user.name=name;
 		window.location.href="#list";
 		}	
     }])
-.controller("shotController",["$scope","$upload","$images","items",function($scope,$upload,$images,around)
+.controller("shotController",["$scope","$images",function($scope,$images)
     {
+	alert("x");
 	$scope.files=$scope.$root.files||[];
+	$scope.upload = function() 
+		{
+		$scope.$root.files=[];	
+	    var options = 
+	    	{
+	        quality : 75,
+    	    destinationType : Camera.DestinationType.DATA_URL,
+        	sourceType : Camera.PictureSourceType.CAMERA,
+	        allowEdit : true,
+    	    encodingType: Camera.EncodingType.JPEG,
+        	targetWidth: 400,
+	        targetHeight: 400,
+    	    popoverOptions: CameraPopoverOptions,
+	        saveToPhotoAlbum: false,
+	        correctOrientation:true,
+	        cameraDirection:navigator.camera.Direction.FRONT
+    		};
+
+    	$cordovaCamera.getPicture(options).then(function(imageData) 
+    		{
+		    var img =  "data:image/jpeg;base64," + imageData;
+		    $scope.$root.files.push({url:img});
+			document.location.href="#shot"
+    		}, function(err) 
+    		{
+	      	// An error occured. Show a message to the user
+    		});
+  		}
+	/*
 	
 	$scope.upload=function(files)
 		{		
@@ -148,24 +176,22 @@ angular.module("taggable",["ngResource","angularFileUpload","google-maps".ns()])
 			$scope.$root.files.push({url:data});
 			document.location.href="#shot"
 			})
-		}
+		}*/
 	$scope.save=function()
 		{
 		around.save($images.UUID(),$scope.files[0].url,$scope.name);
 		window.location.href="#/list"
 		}
+		
     }])
 .controller("itemController",[function()
     {
 	
     }])
 .controller("aroundmeController",["$scope","items",function($scope,items)
-    {			
-	alert("item loading");
+    {				
 	items.query().then(function(data)
 		{
-		alert("item loaded");
-		alert(data);
 		$scope.aroundme=data;
 		})	
     }])
@@ -210,6 +236,7 @@ angular.module("taggable",["ngResource","angularFileUpload","google-maps".ns()])
 	
 	gps.refresh();
 	}])
+
 
 	
 	
