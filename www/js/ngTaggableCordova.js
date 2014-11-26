@@ -1,11 +1,12 @@
 angular.module("taggableCordova",["ngCordova","taggable"])
-.controller("shotController",["$scope","$cordovaCamera",function($scope,$cordovaCamera)
+.controller("shotController",["$scope","$cordovaCamera","uuid","items","$ionicLoading",function($scope,$cordovaCamera,uuid,items,$ionicLoading)
     {  	
-	
-  	$scope.files=$scope.$root.files||[];
+	$scope.name="prova";	
+  	$scope.files=[];
+  	
   	$scope.upload = function() 
   		{
-  		$scope.$root.files=[];	
+  		$scope.files=[];	
   	    var options = 
   	    	{
   	        quality : 75,
@@ -18,33 +19,29 @@ angular.module("taggableCordova",["ngCordova","taggable"])
       	    popoverOptions: CameraPopoverOptions,
   	        saveToPhotoAlbum: false,
   	        correctOrientation:true,
-  	        cameraDirection:navigator.camera.Direction.FRONT
+  	        cameraDirection:navigator.camera.Direction.BACK
       		};
-
+  	    
+  	    $ionicLoading.show();
       	$cordovaCamera.getPicture(options).then(function(imageData) 
       		{
   		    var img =  "data:image/jpeg;base64," + imageData;
+  		    $ionicLoading.hide();
   		    $scope.files.push({url:img});  			
       		}, function(err) 
       		{
   	      	// An error occured. Show a message to the user
       		});
     	}
-  	/*
-  	
-  	$scope.upload=function(files)
-  		{		
-  		$scope.$root.files=[];				
-  		$images.adjust(files,400,200).progress(function(data)
-  			{			
-  			$scope.$root.files.push({url:data});
-  			document.location.href="#shot"
-  			})
-  		}*/
+ 
   	$scope.save=function()
-  		{
-  		around.save($images.UUID(),$scope.files[0].url,$scope.name);
-  		window.location.href="#/tabs/list"
-  		}
+		{	
+  		$ionicLoading.show();  		
+		items.save(uuid.random(),this.files[0].url,this.name).success(function()
+			{
+			$ionicLoading.hide(); 
+			window.location.href="#/tab/home"
+			});
+		}
   	$scope.upload();
-      }])
+    }])

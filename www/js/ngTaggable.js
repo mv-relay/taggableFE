@@ -2,7 +2,19 @@ var style=[{"featureType":"landscape","stylers":[{"saturation":-100},{"lightness
 
 angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 .constant("url","95.110.224.34:8080")
-.factory("gps",[function()
+.factory("uuid",function()
+	{
+	var UUID = function()
+		{
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) 
+			{
+				var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+			return v.toString(16);
+			});
+		}
+	return {random:UUID}
+	})
+.factory("gps",["$q",function($q)
     {
 	var gps = 
 		{
@@ -10,8 +22,14 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		longitude:null,
 		follow:function()
 			{
+			var deferred = $q.defer();
 			act = this;
-			refresh(function(){act.follow()})
+			this.refresh(function()
+				{				
+				deferred.notify({latitude:act.latitude,longitude:act.longitude})
+				act.follow();
+				})
+			return deferred.promise;
 			},
 		refresh:function(callback)
 			{
@@ -19,8 +37,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			if (navigator.geolocation) 
 				navigator.geolocation.getCurrentPosition(function(position)
 					{        										
-					try{clearTimeout(time);}catch(e){}
-						
+					try{clearTimeout(time);}catch(e){}						
 					act.latitude=position.coords.latitude;
 					act.longitude=position.coords.longitude;
 					if(callback) callback();
@@ -41,6 +58,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 	return {
 		save:function(uid,img, name)
 			{
+				
 			var item=
 				{
 				user:
@@ -65,6 +83,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 				    	}
 					}
 				};
+			console.log(JSON.stringify(item));
 			return $http.post("http://"+url+"/relay-service-web/rest/land",item);
 			},
 		query:function()
@@ -85,31 +104,22 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 						var result=[];						
 						for(var i in data.entities)
 							{							
-							var val = data.entities[i].attributes;
-							var user = val.user;
-							for(var m in val.forSales)
-								{	
-								var sale = val.forSales[m];
-								result.push(
-									{									
-									owner:
-										{
-										id		:user.mail,
-										name	:user.mail,
-										avatar	:user.avatar							
-										},
-									id:			sale.id,
-									name:		sale.name,
-									date:		"",
-									img:		sale.img,
-									cat:		[],
-									position:
-										{
-										lat:sale.position.lat,
-										lng:sale.position.lng
-										}
-									})
-								}				
+							var val = data.entities[i].attributes;													
+							result.push(
+								{									
+								owner:		null,
+								id:			val.id,
+								name:		val.name,
+								date:		"",
+								img:		val.img,
+								cat:		[],
+								position:
+									{
+									lat:val.position.lat,
+									lng:val.position.lng
+									}
+								})
+											
 							}
 						deferred.resolve(result);			
 						});
@@ -119,11 +129,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			}
 		}
     }])
-.controller("mainController",["$scope","$images","user",function($scope,$images,user)
-    {
-	$scope.state = $images.state; 
-	$scope.user=user;
-    }])
+
 .controller("loginController",["$cordovaVibration","$scope","user",function($cordovaVibration,$scope,user)
     {
 	$scope.my=function(mail,name)
@@ -134,64 +140,96 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		window.location.href="#list";
 		}	
     }])
-.controller("shotController",["$scope","$images",function($scope,$images)
+.controller('mapCtrl', ["$scope","gps","items","$ionicLoading",function($scope,gps,items,$ionicLoading) 
     {
-	alert("x");
-	$scope.files=$scope.$root.files||[];
-	$scope.upload = function() 
-		{
-		$scope.$root.files=[];	
-	    var options = 
-	    	{
-	        quality : 75,
-    	    destinationType : Camera.DestinationType.DATA_URL,
-        	sourceType : Camera.PictureSourceType.CAMERA,
-	        allowEdit : true,
-    	    encodingType: Camera.EncodingType.JPEG,
-        	targetWidth: 400,
-	        targetHeight: 400,
-    	    popoverOptions: CameraPopoverOptions,
-	        saveToPhotoAlbum: false,
-	        correctOrientation:true,
-	        cameraDirection:navigator.camera.Direction.FRONT
-    		};
-
-    	$cordovaCamera.getPicture(options).then(function(imageData) 
-    		{
-		    var img =  "data:image/jpeg;base64," + imageData;
-		    $scope.$root.files.push({url:img});
-			document.location.href="#shot"
-    		}, function(err) 
-    		{
-	      	// An error occured. Show a message to the user
-    		});
-  		}
-	/*
+	var stylecolor = [{"featureType":"water","stylers":[{"saturation":43},{"lightness":-11},{"hue":"#0088ff"}]},{"featureType":"road","elementType":"geometry.fill","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":99}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#808080"},{"lightness":54}]},{"featureType":"landscape.man_made","elementType":"geometry.fill","stylers":[{"color":"#ece2d9"}]},{"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#ccdca1"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#767676"}]},{"featureType":"road","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","stylers":[{"visibility":"off"}]},{"featureType":"landscape.natural","elementType":"geometry.fill","stylers":[{"visibility":"on"},{"color":"#b8cb93"}]},{"featureType":"poi.park","stylers":[{"visibility":"on"}]},{"featureType":"poi.sports_complex","stylers":[{"visibility":"on"}]},{"featureType":"poi.medical","stylers":[{"visibility":"on"}]},{"featureType":"poi.business","stylers":[{"visibility":"simplified"}]}];
+	var bounds = new google.maps.LatLngBounds();
 	
-	$scope.upload=function(files)
-		{		
-		$scope.$root.files=[];				
-		$images.adjust(files,400,200).progress(function(data)
-			{			
-			$scope.$root.files.push({url:data});
-			document.location.href="#shot"
-			})
-		}*/
-	$scope.save=function()
-		{
-		around.save($images.UUID(),$scope.files[0].url,$scope.name);
-		window.location.href="#/list"
-		}
-		
+	$ionicLoading.show();
+	items.query().then(function(data)
+			{					
+			for(var i in data)
+				{
+				var lat = data[i].position.lat;
+				var lng = data[i].position.lng;
+				bounds.extend(new google.maps.LatLng(lat, lng));
+				
+				$scope.markers.push({id:data[i].id,latitude:lat,longitude:lng});				
+				}
+			$scope.map.center=
+				{
+				latitude:bounds.getCenter().lat(),
+				longitude:bounds.getCenter().lng()
+				};
+			
+			$scope.map.bounds={
+				northeast:
+				{
+				latitude:bounds.getNorthEast().lat(),
+				longitude:bounds.getNorthEast().lng()
+				}, 
+				southwest:
+				{
+				latitude:bounds.getSouthWest().lat(),
+				longitude:bounds.getSouthWest().lng()
+				}}		
+			$ionicLoading.hide();
+			})	
+	//gps.follow().then(null,null,function(data){$scope.map.center=data});
+	
+	$scope.map = {center: gps, zoom: 9, bounds: {}, options:{styles: stylecolor,streetViewControl:false,zoomControl:false,scaleControl:false,mapTypeControl:false}};	
+	$scope.markers = 
+	    	[   
+				{			
+				id:22,
+				latitude: 40.1451,
+				longitude: -99.6680
+				}
+	    	];
     }])
+   
+//.controller("shotController",["$scope","uuid","items",function($scope,uuid,items)
+//    {	
+//	$scope.name="test";
+//	$scope.files=[];
+//	$scope.upload = function() 
+//		{		
+//	    
+//  		}
+//	/*
+//	
+//	$scope.upload=function(files)
+//		{		
+//		$scope.$root.files=[];				
+//		$images.adjust(files,400,200).progress(function(data)
+//			{			
+//			$scope.$root.files.push({url:data});
+//			document.location.href="#shot"
+//			})
+//		}*/
+//	$scope.save=function()
+//		{		
+//		
+//		items.save(uuid.random(),$scope.files[0].url,$scope.name).then(function(){window.location.href="#/tab/home"});		
+//		}
+//		
+//    }])
 .controller("itemController",[function()
     {
 	
     }])
-.controller("aroundmeController",["$scope","items",function($scope,items)
+.controller("aroundmeController",["$scope","items","$ionicLoading",function($scope,items,$ionicLoading)
     {				
+	 $ionicLoading.show({
+		    content: 'Loading',
+		    animation: 'fade-in',
+		    showBackdrop: true,
+		    maxWidth: 200,
+		    showDelay: 0
+		  });
 	items.query().then(function(data)
 		{
+		$ionicLoading.hide();
 		$scope.aroundme=data;
 		})	
     }])

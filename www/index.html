@@ -86,7 +86,7 @@
 <link href="lib/ionic/css/ionic.css" rel="stylesheet">
 <!-- ionic/angularjs js -->
 <script src="lib/ionic/js/ionic.bundle.js"></script>
-<script src="http://code.ionicframework.com/1.0.0-beta.4/js/angular/angular-resource.min.js"></script>
+<script src="http://code.ionicframework.com/1.0.0-beta.13/js/angular/angular-resource.min.js"></script>
 <script src="cordova.js"></script>
 <script src="lib/ngCordova/dist/ng-cordova.js"></script>
 
@@ -303,12 +303,12 @@
             <ion-view title="List">
                 <ion-header-bar class="bar-assertive">
                     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
-                    <h1 class="title">Map</h1>
+                    <h1 class="title" ng-click="add()">Map</h1>
                 </ion-header-bar>
                 <ion-content>                    
  					<div id="map_canvas" tap-disabled="true">
 			    		<ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" bounds="map.bounds" options="map.options">
-			        		<ui-gmap-markers models="randomMarkers" coords="'self'" icon="'icon'"></ui-gmap-markers>
+			        		<ui-gmap-markers models="markers" coords="'self'" icon="'icon'"></ui-gmap-markers>
 			    		</ui-gmap-google-map>
 					</div>
                 </ion-content>
@@ -323,24 +323,20 @@
                 <ion-content padding="true" scroll="true">                    
  					<div class="list card">
 
-  						<div class="item item-avatar">
-    						<img src="http://tutupash.com/site/assets/nin_logo.jpeg">
-    						<h2>Pretty Hate Machine</h2>
-    						<p>Nine Inch Nails</p>
+  						<div class="item item-icon-left">
+    						<i class="icon ion-camera"></i>
+    						<h2>Photo</h2>
   						</div>
 
   						<div class="item item-image">
     						<img ng-src="{{files[0].url}}">
   						</div>
 
-  						<a class="item item-icon-left assertive" href="#">
-    					<i class="icon ion-music-note"></i>Start listening</a>
-
-  <label class="item item-input">
-    <input type="text" placeholder="Name" ng-model="name">
-  </label>
+  						<label class="item item-input">
+    						<input type="text" placeholder="Name" ng-model="name">
+  						</label>
   
-<button class="button button-block button-positive" ng-click="save()">SAVE</button>
+						<button class="button button-block button-positive" ng-click="save()">SAVE</button>
 
 					</div>
                 </ion-content>
@@ -355,7 +351,9 @@
                 </ion-header-bar>
                 <ion-content padding="true" scroll="true">                    
  					<ion-list>        		     
-						<ion-item ng-repeat="item in aroundme" class="item-thumbnail-left"><img src="{{item.img}}" style="width:200px"/><H2>{{item.name}}</h2><P>{{item.descr}}</P></ion-item>						
+						<ion-item ng-repeat="item in aroundme" class="item-thumbnail-left">
+							<div class="item-image" style="overflow:hidden"><img ng-src="{{item.img}}" style="width:150px"/></div><H2>{{item.name}}</h2><P>{{item.descr}}</P>
+						</ion-item>						
 					</ion-list>
                 </ion-content>
             </ion-view>
@@ -380,7 +378,7 @@
 
 	
 
-	<script id="scan.html" type="text/ng-template">
+	<script id="scan.html" type="text/ng-template"> 
             <ion-view title="Scan">
             	<ion-header-bar class="bar-assertive">
 		            <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>

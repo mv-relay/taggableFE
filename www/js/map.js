@@ -42,7 +42,7 @@ angular.module("map",["uiGmapgoogle-maps"])
             latitude: latitude,
             longitude: longitude,
             title: 'm' + i
-        };
+        };        
         ret[idKey] = i;
         return ret;
     };
