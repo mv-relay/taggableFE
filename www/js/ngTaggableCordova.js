@@ -1,7 +1,34 @@
 angular.module("taggableCordova",["ngCordova","taggable"])
+.factory("gps",["$cordovaGeolocation","$q",function($cordovaGeolocation,$q)
+    {
+	var gps = 
+		{
+		latitude:null,
+		longitude:null,
+		follow:function()
+			{
+			return refresh();			    
+			},
+		refresh:function()
+			{
+			var deferred = $q.defer();
+			return $cordovaGeolocation.getCurrentPosition().then(function(result)
+				{
+				var lat  = result.coords.latitude;
+			    var long = result.coords.longitude;
+			    gps.latitude=lat;
+			    gps.longitude=long;
+			    
+				deferred.resolve(result);	
+				});
+			return deferred.promise;
+			}
+		}
+	return gps;
+    }])
 .controller("shotController",["$scope","$cordovaCamera","uuid","items","$ionicLoading",function($scope,$cordovaCamera,uuid,items,$ionicLoading)
     {  	
-	$scope.name="prova";	
+	$scope.name="";	
   	$scope.files=[];
   	
   	$scope.upload = function() 

@@ -87,10 +87,10 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			return $http.post("http://"+url+"/relay-service-web/rest/land",item);
 			},
 		query:function()
-			{
-			var deferred = $q.defer();			
-			gps.refresh(function()
-				{
+			{			
+			var deferred = $q.defer();				
+			gps.refresh().then(function()
+				{						
 				$http.get("http://"+url+"/relay-service-web/rest/land",
 						{params:
 							{						
@@ -101,6 +101,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 						}).success(
 						function(data)
 						{
+							
 						var result=[];						
 						for(var i in data.entities)
 							{							
@@ -188,32 +189,33 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 	    	];
     }])
    
-//.controller("shotController",["$scope","uuid","items",function($scope,uuid,items)
-//    {	
-//	$scope.name="test";
-//	$scope.files=[];
-//	$scope.upload = function() 
-//		{		
-//	    
-//  		}
-//	/*
-//	
-//	$scope.upload=function(files)
-//		{		
-//		$scope.$root.files=[];				
-//		$images.adjust(files,400,200).progress(function(data)
-//			{			
-//			$scope.$root.files.push({url:data});
-//			document.location.href="#shot"
-//			})
-//		}*/
-//	$scope.save=function()
-//		{		
-//		
-//		items.save(uuid.random(),$scope.files[0].url,$scope.name).then(function(){window.location.href="#/tab/home"});		
-//		}
-//		
-//    }])
+.controller("shotController",["$scope","uuid","items",function($scope,uuid,items)
+    {	
+	$scope.name="test";
+	$scope.files=[];
+	$scope.upload = function() 
+		{		
+	    
+  		}
+	/*
+	
+	$scope.upload=function(files)
+		{		
+		$scope.$root.files=[];				
+		$images.adjust(files,400,200).progress(function(data)
+			{			
+			$scope.$root.files.push({url:data});
+			document.location.href="#shot"
+			})
+		}*/
+	$scope.save=function()
+		{		
+		
+		items.save(uuid.random(),$scope.files[0].url,$scope.name).then(function(){window.location.href="#/tab/home"});		
+		}
+		
+    }])
+    
 .controller("itemController",[function()
     {
 	
@@ -227,8 +229,9 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		    maxWidth: 200,
 		    showDelay: 0
 		  });
+	
 	items.query().then(function(data)
-		{
+		{	
 		$ionicLoading.hide();
 		$scope.aroundme=data;
 		})	
