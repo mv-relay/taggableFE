@@ -57,8 +57,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
     {	
 	return {
 		save:function(uid,img, name)
-			{
-				
+			{				
 			var item=
 				{
 				user:
@@ -86,8 +85,17 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			console.log(JSON.stringify(item));
 			return $http.post("http://"+url+"/relay-service-web/rest/land",item);
 			},
+		get:function(item)
+			{
+			var deferred = $q.defer();
+			for(var i in this.list)
+				if(this.list[i].id==item.id)
+					deferred.resolve(this.list[i]);
+			return deferred.promise;
+			},
 		query:function()
-			{			
+			{	
+			var act = this;
 			var deferred = $q.defer();				
 			gps.refresh().then(function()
 				{						
@@ -122,6 +130,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 								})
 											
 							}
+						act.list=result;
 						deferred.resolve(result);			
 						});
 				})
@@ -141,10 +150,19 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		window.location.href="#list";
 		}	
     }])
-.controller('mapCtrl', ["$scope","gps","items","$ionicLoading",function($scope,gps,items,$ionicLoading) 
+.controller('mapCtrl', ["$scope","gps","items","$ionicLoading","$ionicModal",function($scope,gps,items,$ionicLoading,$ionicModal) 
     {
 	var stylecolor = [{"featureType":"water","stylers":[{"saturation":43},{"lightness":-11},{"hue":"#0088ff"}]},{"featureType":"road","elementType":"geometry.fill","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":99}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#808080"},{"lightness":54}]},{"featureType":"landscape.man_made","elementType":"geometry.fill","stylers":[{"color":"#ece2d9"}]},{"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#ccdca1"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#767676"}]},{"featureType":"road","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","stylers":[{"visibility":"off"}]},{"featureType":"landscape.natural","elementType":"geometry.fill","stylers":[{"visibility":"on"},{"color":"#b8cb93"}]},{"featureType":"poi.park","stylers":[{"visibility":"on"}]},{"featureType":"poi.sports_complex","stylers":[{"visibility":"on"}]},{"featureType":"poi.medical","stylers":[{"visibility":"on"}]},{"featureType":"poi.business","stylers":[{"visibility":"simplified"}]}];
 	var bounds = new google.maps.LatLngBounds();
+	
+	$ionicModal.fromTemplateUrl('single.html', function($ionicModal) 
+		{		
+        $scope.single = $ionicModal;
+		}, 
+		{        
+        scope: $scope,        
+        animation: 'slide-in-up'
+		});  
 	
 	$ionicLoading.show();
 	items.query().then(function(data)
@@ -153,9 +171,24 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 				{
 				var lat = data[i].position.lat;
 				var lng = data[i].position.lng;
-				bounds.extend(new google.maps.LatLng(lat, lng));
 				
-				$scope.markers.push({id:data[i].id,latitude:lat,longitude:lng});				
+				$scope.markers.push(
+					{
+					id:data[i].id,
+					latitude:lat,
+					longitude:lng,										
+					onClick:function(obj)
+						{				
+						items.get({id:obj.key}).then(function(data)
+							{
+							$scope.obj=data;	
+							})
+						
+						$scope.single.show();
+						}
+					});
+				
+				bounds.extend(new google.maps.LatLng(lat, lng));
 				}
 			$scope.map.center=
 				{
@@ -178,7 +211,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			})	
 	//gps.follow().then(null,null,function(data){$scope.map.center=data});
 	
-	$scope.map = {center: gps, zoom: 9, bounds: {}, options:{styles: stylecolor,streetViewControl:false,zoomControl:false,scaleControl:false,mapTypeControl:false}};	
+	$scope.map = {center: gps, zoom: 9, bounds: {}, options:{styles: stylecolor,streetViewControl:false,zoomControl:false,scaleControl:false,mapTypeControl:false}};
 	$scope.markers = 
 	    	[   
 				{			
@@ -215,12 +248,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		}
 		
     }])
-    
-.controller("itemController",[function()
-    {
-	
-    }])
-.controller("aroundmeController",["$scope","items","$ionicLoading",function($scope,items,$ionicLoading)
+.controller("aroundmeController",["$scope","items","$ionicLoading","$ionicModal",function($scope,items,$ionicLoading,$ionicModal)
     {				
 	 $ionicLoading.show({
 		    content: 'Loading',
@@ -230,16 +258,42 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		    showDelay: 0
 		  });
 	
+	 $ionicModal.fromTemplateUrl('single.html', function($ionicModal) 
+		{		
+        $scope.single = $ionicModal;
+		}, 
+		{        
+        scope: $scope,        
+        animation: 'slide-in-up'
+		});  
 	items.query().then(function(data)
 		{	
 		$ionicLoading.hide();
+		for(var i in data)
+			data[i].onClick=function()
+				{				
+				items.get({id:this.id}).then(function(data)
+					{
+					$scope.obj=data;	
+					})
+				
+				$scope.single.show();
+				}
 		$scope.aroundme=data;
 		})	
     }])
+.controller("singleController",["$scope","items","$ionicLoading",function($scope,items,$ionicLoading)
+    {				
+	 $ionicLoading.show();
+	/*
+	items.get({id:}).then(function(data)
+		{	
+		$ionicLoading.hide();
+		$scope.aroundme=data;
+		})*/	
+    }])
 .controller("taggableCtrl",["$scope","gps",function($scope,gps)
 	{
-	
-	
 	$scope.map = {center: {latitude: 45.3560454, longitude: 9.1603807 }, zoom: 8, bounds: {}, options:{styles: style}};
     $scope.options = {scrollwheel: false,styles: style};
     

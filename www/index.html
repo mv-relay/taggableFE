@@ -232,7 +232,18 @@
 	    			}
 	  			}
 			})
-
+		.state('tabs.single', 
+			{
+			url : '/single',
+			views: 
+	  			{
+	    		'map-tab': 
+	    			{
+	      			templateUrl: "single.html",
+	      			controller: 'singleCtrl'
+	    			}
+	  			}
+			})
 		// if none of the above states are matched, use this as the fallback
 
 		$urlRouterProvider.otherwise('/tab/home');
@@ -260,7 +271,7 @@
 			<ion-content padding="false" scroll="false" class="has-header">
 				<ion-list> 
 					<ion-item href="#/profile">Profile</ion-item> 
-					<ion-item href="#/tab/list">iBeacon</ion-item> 
+					<ion-item href="#/tab/list">Home</ion-item> 
 					<ion-item href="#/scan">Scan</ion-item>
 				</ion-list> 
 			</ion-content> 
@@ -299,16 +310,32 @@
             </ion-view>
     </script>
 	
+	<script id="single.html" type="text/ng-template">
+  	<ion-modal-view>
+    	<ion-header-bar class="bar-assertive">            
+			<h1 class="title">{{obj.name}}</h1>
+			<div class="button button-clear" ng-click="single.hide()"><span class="icon ion-close"></span></div>
+        </ion-header-bar>
+    	<ion-content>
+      		<img ng-src="{{obj.img}}">
+    	</ion-content>
+  	</ion-modal-view>
+	</script>
+	
 	<script id="map.html" type="text/ng-template">
             <ion-view title="List">
                 <ion-header-bar class="bar-assertive">
                     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
                     <h1 class="title" ng-click="add()">Map</h1>
                 </ion-header-bar>
-                <ion-content>                    
+                <ion-content scroll="false" data-tap-disabled="true">                    
  					<div id="map_canvas" tap-disabled="true">
 			    		<ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" bounds="map.bounds" options="map.options">
-			        		<ui-gmap-markers models="markers" coords="'self'" icon="'icon'"></ui-gmap-markers>
+			        		<ui-gmap-markers models="markers" coords="'self'" icon="'icon'" click="'onClick'">
+								<!--ui-gmap-windows show="show">
+                					<div ng-non-bindable>{{id}}</div>
+            					</ui-gmap-windows-->
+							</ui-gmap-markers>
 			    		</ui-gmap-google-map>
 					</div>
                 </ion-content>
@@ -351,7 +378,7 @@
                 </ion-header-bar>
                 <ion-content padding="true" scroll="true">                    
  					<ion-list>        		     
-						<ion-item ng-repeat="item in aroundme" class="item-thumbnail-left">
+						<ion-item ng-repeat="item in aroundme" class="item-thumbnail-left" ng-click="item.onClick()">
 							<div class="item-image" style="overflow:hidden"><img ng-src="{{item.img}}" style="width:150px"/></div><H2>{{item.name}}</h2><P>{{item.descr}}</P>
 						</ion-item>						
 					</ion-list>
