@@ -56,33 +56,30 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 .factory("items",["$resource","url","gps","$q","$http","user",function($resource,url,gps,$q,$http,user)
     {	
 	return {
-		save:function(uid,img, name)
+		save:function(obj)
 			{				
 			var item=
 				{
 				user:
 					{
-					mail:		user.mail,
-					firstName:	user.first_name,
-					secondName:	user.second_name,
-					avatar:		user.avatar
+					mail:		user.mail
 					},
 				taggables:null,
 				taggable:
 					{
-				    id: 		uid,
-				    name: 		name,				    
-				    stream: 	img,
-				    description: "test",
-				    tags: null,
+				    id: 			obj.uid,
+				    name: 			obj.name,				    
+				    stream: 		obj.img,
+				    description: 	obj.description,
+				    tags: 			obj.tags,
 				    position: 
 				    	{
 				      	lat: gps.latitude,
 				      	lng: gps.longitude
 				    	}
 					}
-				};
-			console.log(JSON.stringify(item));
+				};			
+			
 			return $http.post("http://"+url+"/relay-service-web/rest/land",item);
 			},
 		get:function(item)
@@ -230,6 +227,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		{		
 	    
   		}
+	
 	/*
 	
 	$scope.upload=function(files)
@@ -291,6 +289,24 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		$ionicLoading.hide();
 		$scope.aroundme=data;
 		})*/	
+    }])
+.controller("audioController",["$scope","$cordovaCapture","$cordovaMedia",function($scope,$cordovaCapture,$cordovaMedia)
+    {
+	debugger;
+	$scope.data=null
+	$scope.capture=function()
+		{
+		var options = { limit: 3, duration: 10 };
+		$cordovaCapture.captureAudio(options).then(function(audioData)
+			{			
+			$scope.data = audioData[0].fullPath;			
+			})
+		}
+	$scope.play=function()
+		{
+		var source = $cordovaMedia.newMedia($scope.data);		
+		$cordovaMedia.play(source.media);
+		}
     }])
 .controller("taggableCtrl",["$scope","gps",function($scope,gps)
 	{

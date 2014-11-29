@@ -26,27 +26,27 @@ angular.module("taggableCordova",["ngCordova","taggable"])
 		}
 	return gps;
     }])
-.controller("shotController",["$scope","$cordovaCamera","uuid","items","$ionicLoading",function($scope,$cordovaCamera,uuid,items,$ionicLoading)
+.controller("shotController",["$scope","$cordovaCamera","uuid","items","$ionicLoading","$http",function($scope,$cordovaCamera,uuid,items,$ionicLoading,$http)
     {  	
 	$scope.name="";	
   	$scope.files=[];
   	
-  	$scope.upload = function() 
+  	$scope.upload =	function() 
   		{
-  		$scope.files=[];	
-  	    var options = 
+  		$scope.files	=	[];	
+  	    var options 	= 
   	    	{
-  	        quality : 75,
-      	    destinationType : Camera.DestinationType.DATA_URL,
-          	sourceType : Camera.PictureSourceType.CAMERA,
-  	        allowEdit : true,
-      	    encodingType: Camera.EncodingType.JPEG,
-          	targetWidth: 400,
-  	        targetHeight: 400,
-      	    popoverOptions: CameraPopoverOptions,
-  	        saveToPhotoAlbum: false,
-  	        correctOrientation:true,
-  	        cameraDirection:navigator.camera.Direction.BACK
+  	        quality 			: 75,
+      	    destinationType 	: Camera.DestinationType.DATA_URL,
+          	sourceType 			: Camera.PictureSourceType.CAMERA,
+  	        allowEdit 			: true,
+      	    encodingType		: Camera.EncodingType.JPEG,
+          	targetWidth			: 400,
+  	        targetHeight		: 400,
+      	    popoverOptions		: CameraPopoverOptions,
+  	        saveToPhotoAlbum	: false,
+  	        correctOrientation	: true,
+  	        cameraDirection		: navigator.camera.Direction.BACK
       		};
   	    
   	    $ionicLoading.show();
@@ -57,18 +57,33 @@ angular.module("taggableCordova",["ngCordova","taggable"])
   		    $scope.files.push({url:img});  			
       		}, function(err) 
       		{
-  	      	// An error occured. Show a message to the user
+      		$ionicLoading.hide();
       		});
     	}
  
-  	$scope.save=function()
+  	$scope.save	=	function()
 		{	
+  		var act = this;
   		$ionicLoading.show();  		
-		items.save(uuid.random(),this.files[0].url,this.name).success(function()
+  		var obj = 
+  			{
+  			uuid		:	uuid.random(),
+  			img			:	act.files[0].url,
+  			name		:	act.name,
+  			tags 		:	act.tags.tagging("getTags"),
+  			description	:	act.description
+  			}
+		items.save(obj).success(function()
 			{
 			$ionicLoading.hide(); 
 			window.location.href="#/tab/home"
+			}).error(function(e)
+			{
+			$ionicLoading.hide();
+			alert(JSON.stringify(e));
 			});
+  		alert("saved");
 		}
-  	$scope.upload();
+  	$scope.tags= $('#tags').tagging()[0];
+  	$scope.upload();  	
     }])

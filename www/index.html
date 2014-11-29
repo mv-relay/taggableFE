@@ -60,6 +60,15 @@
 	
 }
 }
+
+div.tag span
+	{
+	background: none repeat scroll 0 0 #cc2311;
+	}
+div.tag	
+	{
+	background: none repeat scroll 0 0 #ef4e3a;
+	}
 </style>
 
 <style>
@@ -98,6 +107,25 @@
 <script src='lib/lodash/dist/lodash.min.js'></script>
 <script src='lib/bluebird/js/browser/bluebird.js'></script>
 <script src='lib/angular-google-maps/dist/angular-google-maps.min.js'></script>
+
+<link href="lib/taggingJS/tag-basic-style.css" rel="stylesheet">
+<script src='lib/jquery/dist/jquery.min.js'></script>
+<script src='lib/taggingJS/tagging.js'></script>
+
+
+<!-- link href='lib/bootstrap-tagsinput/examples/lib/bootstrap-3/dist/css/bootstrap.min.css' rel="stylesheet">
+<link href='lib/bootstrap-tagsinput/examples/lib/bootstrap-3/dist/css/bootstrap-theme.min.css' rel="stylesheet">
+<link href="lib/bootstrap-tagsinput/dist/bootstrap-tagsinput.css" rel="stylesheet"-->
+
+<!-- script src='lib/bootstrap-tagsinput/examples/lib/jquery/dist/jquery.min.js'></script>
+<script src='lib/bootstrap-tagsinput/examples/lib/bootstrap-3/dist/js/bootstrap.min.js'></script>
+<script src='lib/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js'></script>
+<script src='lib/bootstrap-tagsinput/dist/bootstrap-tagsinput-angular.min.js'></script>
+<script src='lib/bootstrap-tagsinput/examples/lib/typeahead.js/dist/typeahead.bundle.js'></script>
+<script src='lib/bootstrap-tagsinput/examples/lib/rainbow/js/rainbow.min.js'></script>
+<script src='lib/bootstrap-tagsinput/examples/lib/rainbow/js/language/generic.js'></script>
+<script src='lib/bootstrap-tagsinput/examples/lib/rainbow/js/language/html.js'></script>
+<script src='lib/bootstrap-tagsinput/examples/lib/rainbow/js/language/javascript.js'></script-->
 
 
 
@@ -162,6 +190,7 @@
 				StatusBar.styleDefault();
 			}
 
+			$("#tagBox").tagging();
 			//  beacon();
 		});
 	})
@@ -207,6 +236,12 @@
 	      			controller: 'aroundmeController'
 	    			}
 	  			}
+			})
+		.state('audio', 
+			{
+			url: "/audio",			
+			templateUrl: "audio.html",
+			controller: 'audioController'
 			})
 		.state('tabs.shot', 
 			{
@@ -261,6 +296,8 @@
 	}).controller("scanController", [ "$scope", function($scope) {
 
 	} ]);
+	
+	
 </script>
 </head>
 <body ng-app="app" animation="slide-left-right-ios7">
@@ -271,7 +308,8 @@
 			<ion-content padding="false" scroll="false" class="has-header">
 				<ion-list> 
 					<ion-item href="#/profile">Profile</ion-item> 
-					<ion-item href="#/tab/list">Home</ion-item> 
+					<ion-item href="#/tab/list">Home</ion-item>
+					<ion-item href="#/audio">Audio</ion-item> 
 					<ion-item href="#/scan">Scan</ion-item>
 				</ion-list> 
 			</ion-content> 
@@ -306,6 +344,25 @@
  					<ion-list>        		     
 												
 					</ion-list>
+                </ion-content>
+            </ion-view>
+    </script>
+    
+    <script id="audio.html" type="text/ng-template">
+            <ion-view title="List">
+                <ion-header-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title">Profile</h1>
+                </ion-header-bar>
+                <ion-content padding="true" scroll="true">                    
+ 					<div class="list card">
+
+  						<div class="item item-avatar"><h2>Audio</h2><p>Test audio</p></div>
+
+  						<a class="item item-icon-left assertive" ng-click="capture()"><i class="icon ion-music-note"></i>Start save</a>
+						<a class="item item-icon-left assertive" ng-click="play()"><i class="icon ion-music-note"></i>Start listening</a>	
+
+					</div>
                 </ion-content>
             </ion-view>
     </script>
@@ -349,7 +406,7 @@
                 </ion-header-bar>
                 <ion-content padding="true" scroll="true">                    
  					<div class="list card">
-
+						<form>
   						<div class="item item-icon-left">
     						<i class="icon ion-camera"></i>
     						<h2>Photo</h2>
@@ -360,12 +417,22 @@
   						</div>
 
   						<label class="item item-input">
-    						<input type="text" placeholder="Name" ng-model="name">
+    						<input id="name" type="text" placeholder="Name" ng-model="name">
   						</label>
-  
-						<button class="button button-block button-positive" ng-click="save()">SAVE</button>
+				
+  						<div id="tags" class="tagging-js" 							
+							edit-on-delete="false"
+							case-sensitive="false" 
+							data-no-duplicate="true">photo</div>
 
+						<label class="item item-input">
+							<textarea placeholder="Description"></textarea>
+						</label>
+
+						<button class="button button-block button-positive" ng-click="save()">SAVE</button>
+						</form>
 					</div>
+
                 </ion-content>
             </ion-view>
     </script>
@@ -431,5 +498,8 @@
         	    </ion-content>
 	        </ion-view>
         </script>
+        
+        <script src='lib/aloha/aloha.min.js'></script>
+        
 </body>
 </html>
