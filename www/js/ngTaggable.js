@@ -63,12 +63,11 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 				user:
 					{
 					mail:		user.mail
-					},
-				taggables:null,
+					},				
 				taggable:
 					{
-				    id: 			obj.uid,
-				    name: 			obj.name,				    
+				    id: 			obj.uuid,
+				    name: 			obj.name,					    
 				    stream: 		obj.img,
 				    description: 	obj.description,
 				    tags: 			obj.tags,
@@ -76,10 +75,11 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 				    	{
 				      	lat: gps.latitude,
 				      	lng: gps.longitude
-				    	}
+				    	},
+					like:null
 					}
 				};			
-			
+						
 			return $http.post("http://"+url+"/relay-service-web/rest/land",item);
 			},
 		get:function(item)
@@ -242,7 +242,12 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 	$scope.save=function()
 		{		
 		
-		items.save(uuid.random(),$scope.files[0].url,$scope.name).then(function(){window.location.href="#/tab/home"});		
+		items.save(
+			{
+			uuid		:uuid.random(),
+			img			:$scope.files[0].url,
+			name		:$scope.name,
+			description :$scope.description}).then(function(){window.location.href="#/tab/home"});		
 		}
 		
     }])
