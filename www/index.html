@@ -243,6 +243,12 @@ div.tag
 			templateUrl: "audio.html",
 			controller: 'audioController'
 			})
+		.state('iBeacon', 
+			{
+			url: "/beacon",			
+			templateUrl: "iBeacon.html",
+			controller: 'beaconController'
+			})
 		.state('tabs.shot', 
 			{
 			url : '/shot',
@@ -293,7 +299,11 @@ div.tag
 				'background-image' : 'url(' + url + ')',
 			});
 		}
-	}).controller("scanController", [ "$scope", function($scope) {
+	})
+	.controller("beaconController", [ "$scope", function($scope) {
+		beacon();
+	} ])
+	.controller("scanController", [ "$scope", function($scope) {
 
 	} ]);
 	
