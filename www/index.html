@@ -144,20 +144,21 @@ div.tag
 	// 'starter.services' is found in services.js
 	// 'starter.controllers' is found in controllers.js
 
-	function beacon() {
+	function beacon($scope) {
 		try {
 			var delegate = new cordova.plugins.locationManager.Delegate();
-			var uuid = '2F234454-CF6D-4A0F-ADF2-F4911BA9FFA6';
+			var uuid = 'ACFD065E-C3C0-11E3-9BBE-1A514932AC01';
 			var identifier = 'beaconOnTheMacBooksShelf';
-			var minor = 1;
-			var major = 100;
+			var minor = null;
+			var major = null;
 			var beaconRegion = new cordova.plugins.locationManager.BeaconRegion(
-					identifier, uuid, major, minor);
+					identifier, uuid,0,0);
 
 			delegate.didRangeBeaconsInRegion = function(pluginResult) {
 				console.log('[DOM] didRangeBeaconsInRegion: '
 						+ JSON.stringify(pluginResult));
-				alert("InRegion")
+				$scope.$apply(function(){$scope.list = pluginResult.beacons});
+				//alert("InRegion")
 			};
 			delegate.didDetermineStateForRegion = function(pluginResult) {
 				console.log('[DOM] didDetermineStateForRegion: '
@@ -167,10 +168,9 @@ div.tag
 			delegate.didStartMonitoringForRegion = function(pluginResult) {
 				alert("StartMonitoring");
 			}
-
+			alert("start check beacon")
 			cordova.plugins.locationManager.setDelegate(delegate);
-			cordova.plugins.locationManager.startRangingBeaconsInRegion(
-					beaconRegion).fail(console.error).done();
+			cordova.plugins.locationManager.startRangingBeaconsInRegion(beaconRegion).fail(console.error).done();
 		} catch (e) {
 			alert(e);
 		}
@@ -301,7 +301,11 @@ div.tag
 		}
 	})
 	.controller("beaconController", [ "$scope", function($scope) {
-		beacon();
+		$scope.start=function()
+			{
+			beacon($scope);	
+			}
+		
 	} ])
 	.controller("scanController", [ "$scope", function($scope) {
 
@@ -320,7 +324,7 @@ div.tag
 					<ion-item href="#/profile">Profile</ion-item> 
 					<ion-item href="#/tab/list">Home</ion-item>
 					<ion-item href="#/audio">Audio</ion-item> 
-					<ion-item href="#/scan">Scan</ion-item>
+					<ion-item href="#/beacon">Scan</ion-item>
 				</ion-list> 
 			</ion-content> 
 		</ion-side-menu> 
@@ -467,7 +471,7 @@ div.tag
             <ion-view title="iBeacon">
             	<ion-header-bar class="bar-assertive">
 		            <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
-        		    <h1 class="title">iBeacon</h1>
+        		    <h1 class="title" ng-click="start()">iBeacon</h1>
 	            </ion-header-bar>
     	        <ion-content padding="true" class="has-header">
         		    <form>
@@ -476,6 +480,11 @@ div.tag
 			            <input type="text" placeholder="UUID">
             		</label>
 		            </form>
+					<ion-list>        		     
+						<ion-item ng-repeat="item in list" class="item-thumbnail-left">
+							<div class="item-image" style="overflow:hidden"></div><H2>{{item.uuid}}</h2><P>{{item.accuracy}}</P>
+						</ion-item>						
+					</ion-list>
         	    </ion-content>
 	        </ion-view>
         </script>
