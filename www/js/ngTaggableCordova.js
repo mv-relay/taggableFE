@@ -1,4 +1,40 @@
-angular.module("taggableCordova",["ngCordova","taggable"])
+angular.module("taggableCordova",["taggable","ngCordova"])
+.config(["$provide",function($provide)
+        {		
+     	$provide.decorator("$beacons",["$delegate","$beaconsCordova",function($delegate, $beaconsCordova)	{
+     		return $beaconsCordova.delegate($delegate);
+     		}]);
+     	}])
+.service("$beaconsCordova",function()
+	{	
+	this.delegate = function($delegate)
+		{
+		$delegate.init=function()
+			{						
+			var delegate = new cordova.plugins.locationManager.Delegate();				
+				delegate.didRangeBeaconsInRegion 	= function(param){$delegate.delegate.didRangeBeaconsInRegion(param);};
+				delegate.didDetermineStateForRegion = function(param){$delegate.delegate.didDetermineStateForRegion(param);};
+				delegate.didStartMonitoringForRegion= function(param){}
+			
+			cordova.plugins.locationManager.setDelegate(delegate);
+			cordova.plugins.locationManager.requestWhenInUseAuthorization();
+			
+			$delegate.init=null;
+			}
+		$delegate.add=function(obj)
+			{	
+			if($delegate.init!=null) $delegate.init();
+			this.list.push(obj);
+			var beaconRegion = new cordova.plugins.locationManager.BeaconRegion(obj.name, obj.uuid,obj.major,obj.minor);
+						
+			//if(obj.near!=null || obj.far!=null || obj.immediate!=null)
+			
+			cordova.plugins.locationManager.startRangingBeaconsInRegion(beaconRegion).fail(console.error).done();			
+			if(obj.enter!=null || obj.exit!=null) cordova.plugins.locationManager.startMonitoringForRegion(beaconRegion).fail(console.error).done();			
+			}
+		return $delegate;
+		}
+	})
 .factory("gps",["$cordovaGeolocation","$q",function($cordovaGeolocation,$q)
     {
 	var gps = 
@@ -81,9 +117,28 @@ angular.module("taggableCordova",["ngCordova","taggable"])
 			{
 			$ionicLoading.hide();
 			alert(JSON.stringify(e));
-			});
-  		alert("saved");
+			});  		
 		}
   	$scope.tags= $('#tags').tagging()[0];
   	$scope.upload();  	
     }])
+.service("$notify",["$ionicLoading","$cordovaLocalNotification",function($ionicLoading,$cordovaLocalNotification)
+		{
+		this.show=function(title,msg,json)
+			{
+			$ionicLoading.show({
+		        template: title,
+		        noBackdrop: true,
+		        duration: 1500
+		    	});
+			$cordovaLocalNotification.add({
+			      id: 'some_notification_id',
+			      title:title,
+			      message:msg,
+			      json:json
+			    }).then(function () {
+			      console.log('callback for adding background notification');
+			    });
+			}
+		}])
+ 

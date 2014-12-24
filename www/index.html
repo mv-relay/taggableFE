@@ -91,19 +91,29 @@ div.tag
             left: 0;
         }
 </style>
-<link href="/css/preview-frame.css" rel="stylesheet">
 <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+
+<style>
+.loading-container .loading 
+	{
+	padding: 8px;	
+	font-size: 40px;
+	}
+</style>
 <!-- ionic/angularjs js -->
 <script src="lib/ionic/js/ionic.bundle.js"></script>
-<script src="http://code.ionicframework.com/1.0.0-beta.13/js/angular/angular-resource.min.js"></script>
+<script src="lib/angular-resource/angular-resource.min.js"></script>
 <script src="cordova.js"></script>
 <script src="lib/ngCordova/dist/ng-cordova.js"></script>
 
 <script src="js/map.js"></script>
+<script src="js/ngIntro.js"></script>
 <script src="js/ngTaggable.js"></script>
 <script src="js/ngTaggableCordova.js"></script>
+<script src="js/ngTaggableMock.js"></script>
 
-<script src='http://maps.googleapis.com/maps/api/js?sensor=false'></script>
+
+<script src='http://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=geometry'></script>
 <script src='lib/lodash/dist/lodash.min.js'></script>
 <script src='lib/bluebird/js/browser/bluebird.js'></script>
 <script src='lib/angular-google-maps/dist/angular-google-maps.min.js'></script>
@@ -111,6 +121,18 @@ div.tag
 <link href="lib/taggingJS/tag-basic-style.css" rel="stylesheet">
 <script src='lib/jquery/dist/jquery.min.js'></script>
 <script src='lib/taggingJS/tagging.js'></script>
+<style>
+	.slider-slide
+		{
+		background:transparent;
+		}
+	.slider
+		{
+		transition-duration:2s;
+		}
+</style>
+
+
 
 
 <!-- link href='lib/bootstrap-tagsinput/examples/lib/bootstrap-3/dist/css/bootstrap.min.css' rel="stylesheet">
@@ -144,41 +166,10 @@ div.tag
 	// 'starter.services' is found in services.js
 	// 'starter.controllers' is found in controllers.js
 
-	function beacon($scope) {
-		try {
-			var delegate = new cordova.plugins.locationManager.Delegate();
-			var uuid = 'ACFD065E-C3C0-11E3-9BBE-1A514932AC01';
-			var identifier = 'beaconOnTheMacBooksShelf';
-			var minor = null;
-			var major = null;
-			var beaconRegion = new cordova.plugins.locationManager.BeaconRegion(
-					identifier, uuid,0,0);
-
-			delegate.didRangeBeaconsInRegion = function(pluginResult) {
-				console.log('[DOM] didRangeBeaconsInRegion: '
-						+ JSON.stringify(pluginResult));
-				$scope.$apply(function(){$scope.list = pluginResult.beacons});
-				//alert("InRegion")
-			};
-			delegate.didDetermineStateForRegion = function(pluginResult) {
-				console.log('[DOM] didDetermineStateForRegion: '
-						+ JSON.stringify(pluginResult));
-				alert("StateForRegion");
-			};
-			delegate.didStartMonitoringForRegion = function(pluginResult) {
-				alert("StartMonitoring");
-			}
-			alert("start check beacon")
-			cordova.plugins.locationManager.setDelegate(delegate);
-			cordova.plugins.locationManager.startRangingBeaconsInRegion(beaconRegion).fail(console.error).done();
-		} catch (e) {
-			alert(e);
-		}
-	}
-
-	angular.module('app', ['ionic','map','taggableCordova'])
-
-	.run(function($ionicPlatform) {
+	angular.module('app', ['ionic','map','taggableMock'])
+	//angular.module('app', ['ionic','map','taggableCordova'])
+	
+	.run(["$ionicPlatform","$beacons","$notify","$state","$ionicModal","$rootScope","single",function($ionicPlatform,$beacons,$notify,$state,$ionicModal,$rootScope,single) {
 		$ionicPlatform.ready(function() {
 			// Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
 			// for form inputs)
@@ -191,9 +182,21 @@ div.tag
 			}
 
 			$("#tagBox").tagging();
-			//  beacon();
+			
+			
+			
+			$beacons.change().then(null,null,function(data)
+				{				
+				if(data.near.length>0) 
+					{
+					if(data.view==data.near[0].taggable.id) return;
+					data.view = data.near[0].taggable.id;					
+					single.open(data.near[0].taggable.id);
+					}
+				});
+				
 		});
-	})
+	}])
 
 	.config(function($stateProvider, $urlRouterProvider) {
 
@@ -214,7 +217,15 @@ div.tag
 			url: "/profile",			
 			templateUrl: "profile.html"
 			})
-		 .state('tabs.home', {
+		.state('intro', 
+			{
+			url: "/",		
+			controller:"introController",
+			templateUrl: "intro.html"
+			})
+		 .state('tabs.home', 
+			{
+			cache: true,
       		url: "/home",
       		views: 
       			{
@@ -227,6 +238,7 @@ div.tag
     		})
 		.state('tabs.list', 
 			{
+			cache: true,
 			url : '/list',
 			views: 
 	  			{
@@ -236,7 +248,20 @@ div.tag
 	      			controller: 'aroundmeController'
 	    			}
 	  			}
-			})
+			})	
+		.state('tabs.listsingle', 
+			{
+			cache: true,
+			url : '/single/{uid}',
+			views: 
+	  			{
+	    		'list-tab': 
+	    			{
+	      			templateUrl: "list.html",
+	      			controller: 'aroundmeController'	      			
+	    			}
+	  			}
+			})	
 		.state('audio', 
 			{
 			url: "/audio",			
@@ -248,6 +273,12 @@ div.tag
 			url: "/beacon",			
 			templateUrl: "iBeacon.html",
 			controller: 'beaconController'
+			})
+		.state('notify', 
+			{
+			url: "/notify",			
+			templateUrl: "notify.html",
+			controller: 'notificationController'
 			})
 		.state('tabs.shot', 
 			{
@@ -263,6 +294,7 @@ div.tag
 			})
 		.state('tabs.map', 
 			{
+			cache: true,
 			url : '/map',
 			views: 
 	  			{
@@ -300,23 +332,51 @@ div.tag
 			});
 		}
 	})
-	.controller("beaconController", [ "$scope", function($scope) {
-		$scope.start=function()
-			{
-			beacon($scope);	
+	.controller("notificationController",["$scope","$cordovaLocalNotification",function($scope,$cordovaLocalNotification)
+		{
+		$scope.start=function(){
+			alert("invio...");
+			alert(window.plugin.notification.local);
+			
+			window.plugin.notification.local.add({message: 'Attenzione dietro di te un beacon'},function(){alert("sent")},$scope);
+				
 			}
+		}])	
+	.controller("beaconController", [ "$scope","$beacons","$notify", function($scope,$beacons,$notify) 
+	    {		
+			$beacons.change().then(function(){},function(){},function(data)
+				{								
+				$scope.near		= $beacons.near;
+				$scope.far		= $beacons.far;
+				$scope.immediate= $beacons.immediate;				
+				})
+		}])
+	.controller("scanController", [ "$scope", function($scope) {
 		
 	} ])
-	.controller("scanController", [ "$scope", function($scope) {
-
-	} ]);
+	.controller("introController",["$scope",function($scope)
+	    {
+		$scope.change=function(index)
+			{
+			$(".slider").css("background-position-x",-(index*400)+"px");		
+			}
+		$scope.start=function()
+			{
+			$(".slider").css("opacity",0);
+			setTimeout(function()
+				{
+				document.location.href='#/tab/list';
+				},2000)
+			
+			}
+	    }]);
 	
 	
 </script>
 </head>
 <body ng-app="app" animation="slide-left-right-ios7">
 	
-	<ion-side-menus> 
+	<ion-side-menus ng-controller="appController"> 
 		<ion-side-menu side="left">
 			<ion-header-bar class="bar-positive"><h1 class="title">Menu</h1></ion-header-bar> 
 			<ion-content padding="false" scroll="false" class="has-header">
@@ -324,7 +384,8 @@ div.tag
 					<ion-item href="#/profile">Profile</ion-item> 
 					<ion-item href="#/tab/list">Home</ion-item>
 					<ion-item href="#/audio">Audio</ion-item> 
-					<ion-item href="#/beacon">Scan</ion-item>
+					<ion-item href="#/beacon">Beacon</ion-item>
+					<ion-item href="#/notify">Notify</ion-item>
 				</ion-list> 
 			</ion-content> 
 		</ion-side-menu> 
@@ -332,7 +393,23 @@ div.tag
 			<ion-nav-view></ion-nav-view>
 		</ion-pane> 
 	</ion-side-menus>
-	
+	 
+	<script id="intro.html" type="text/ng-template">
+	<ion-slide-box style="background-image:url('img/lighthouse.jpg')" on-slide-changed="change($index)">
+  		<ion-slide>
+    		<div class="box blue"><h1>Look Around</h1></div>
+  		</ion-slide>
+  		<ion-slide>
+    		<div class="box yellow"><h1>Tag Anywhere</h1></div>
+  		</ion-slide>
+  		<ion-slide>
+    		<div class="box pink">
+				<h1>Tag Anything</h1>
+				<button class="button button-large button-positive" ng-click="start()">Start</button>
+			</div>
+  		</ion-slide>
+	</ion-slide-box>
+	</script>
 	
 	<script id="tabs.html" type="text/ng-template">
 	<ion-tabs class="tabs-positive tabs-icon-only">		
@@ -343,7 +420,7 @@ div.tag
 			 <ion-nav-view name="shot-tab"></ion-nav-view>
 		</ion-tab> 
 		<ion-tab icon-on="ion-ios7-navigate" icon-off="ion-ios7-navigate-outline" title="Map" href="#/tab/map">
-			 <ion-nav-view name="map-tab"></ion-nav-view>
+			 <ion-nav-view name="map-tab"></ion-nav-view>			
 		</ion-tab>
 	</ion-tabs>
 	</script>
@@ -380,15 +457,51 @@ div.tag
                 </ion-content>
             </ion-view>
     </script>
+
 	
 	<script id="single.html" type="text/ng-template">
   	<ion-modal-view>
     	<ion-header-bar class="bar-assertive">            
 			<h1 class="title">{{obj.name}}</h1>
-			<div class="button button-clear" ng-click="single.hide()"><span class="icon ion-close"></span></div>
+			<div class="button button-clear" ng-click="modal.hide()"><span class="icon ion-close"></span></div>
         </ion-header-bar>
     	<ion-content>
-      		<img ng-src="{{obj.img}}">
+      		
+			<div class="list card">
+  				<div class="item item-avatar">
+    				<i class="icon ion-images" style="font-size: 43px;float: left;margin-left: -50px;"></i>
+    				<h2>{{obj.name}}</h2>
+    				<p>{{obj.position.distance|distance}}</p>
+  				</div>
+
+  <div class="item item-body">
+    <img class="full-image" ng-src="{{obj.img}}">
+    <p>
+      {{obj.description}}
+    </p>
+    <p>
+      <a href="#" class="subdued">1 Like</a>
+      <a href="#" class="subdued">5 Comments</a>
+    </p>
+  </div>
+
+  <div class="item tabs tabs-secondary tabs-icon-left">
+    <a class="tab-item" href="#">
+      <i class="icon ion-thumbsup"></i>
+      Like
+    </a>
+    <a class="tab-item" href="#">
+      <i class="icon ion-chatbox"></i>
+      Comment
+    </a>
+    <a class="tab-item" href="#">
+      <i class="icon ion-share"></i>
+      Share
+    </a>
+  </div>
+
+			</div>
+
     	</ion-content>
   	</ion-modal-view>
 	</script>
@@ -460,7 +573,14 @@ div.tag
                 <ion-content padding="true" scroll="true">                    
  					<ion-list>        		     
 						<ion-item ng-repeat="item in aroundme" class="item-thumbnail-left" ng-click="item.onClick()">
-							<div class="item-image" style="overflow:hidden"><img ng-src="{{item.img}}" style="width:150px"/></div><H2>{{item.name}}</h2><P>{{item.descr}}</P>
+							<div class="item-image" style="overflow:hidden">
+								<img ng-src="{{item.img}}" style="width:150px"/>
+							</div>
+							<H2>{{item.name}}</h2><P>{{item.description}}</P>
+							<div style="float:right">
+								<div class="distance" style="float:right">{{item.position.distance|distance}}</div>
+								<div class="icon ion-navigate" style="transform: rotate({{item.position.direction}}deg);transform-origin:10px 10px; height:20px; width:20px;float: left;"></div>
+							</div>
 						</ion-item>						
 					</ion-list>
                 </ion-content>
@@ -475,21 +595,47 @@ div.tag
 	            </ion-header-bar>
     	        <ion-content padding="true" class="has-header">
         		    <form>
-		            <label class="item item-input">
+		            <label class="item item-input">						
             			<span class="input-label">UUID</span>
 			            <input type="text" placeholder="UUID">
             		</label>
 		            </form>
+
+					<ion-list>
+						<ion-item>Immediate</ion-item>        		     
+						<ion-item ng-repeat="item in immediate" class="item-thumbnail-left">
+							<div class="item-image" style="overflow:hidden"></div><H2>{{item.name}}</h2><P>{{item.accuracy}} - {{item.proximity}}</P>
+						</ion-item>						
+					</ion-list>
+					<ion-list>
+						<ion-item>Near</ion-item>        		     
+						<ion-item ng-repeat="item in near" class="item-thumbnail-left">
+							<div class="item-image" style="overflow:hidden"></div><H2>{{item.name}}</h2><P>{{item.accuracy}} - {{item.proximity}}</P>
+						</ion-item>						
+					</ion-list>
 					<ion-list>        		     
-						<ion-item ng-repeat="item in list" class="item-thumbnail-left">
-							<div class="item-image" style="overflow:hidden"></div><H2>{{item.uuid}}</h2><P>{{item.accuracy}}</P>
+						<ion-item>Far</ion-item>
+						<ion-item ng-repeat="item in far" class="item-thumbnail-left">
+							<div class="item-image" style="overflow:hidden"></div><H2>{{item.name}}</h2><P>{{item.accuracy}} - {{item.proximity}}</P>
 						</ion-item>						
 					</ion-list>
         	    </ion-content>
 	        </ion-view>
         </script>
 
-	
+	<script id="notify.html" type="text/ng-template">
+            <ion-view title="iBeacon">
+            	<ion-header-bar class="bar-assertive">
+		            <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+        		    <h1 class="title">Notification</h1>
+	            </ion-header-bar>
+    	        <ion-content padding="true" class="has-header">
+        		    <form>
+		            <button ng-click="start()">START</button>
+		            </form>					
+        	    </ion-content>
+	        </ion-view>
+        </script>
 
 	<script id="scan.html" type="text/ng-template"> 
             <ion-view title="Scan">
