@@ -500,8 +500,12 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			single.open($stateParams.uid);
 		})			
     }])
-.controller("singleTaggableController",["items","$stateParams","$scope","$ionicScrollDelegate",function(items,$stateParams,$scope,$ionicScrollDelegate)
+.controller("singleTaggableController",["items","$stateParams","$scope","$ionicScrollDelegate","$ionicNavBarDelegate",function(items,$stateParams,$scope,$ionicScrollDelegate,$ionicNavBarDelegate)
     {
+	$scope.close=function()
+		{
+		$ionicNavBarDelegate.back();
+		}
 	$scope.background=
 		{
 		h:140,
@@ -517,8 +521,6 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 	items.get({id:$stateParams.id}).then(function(data)
 		{		
 		angular.extend($scope,data);
-		
-		
 		});
     }])
 .controller("audioController",["$scope","$cordovaCapture","$cordovaMedia",function($scope,$cordovaCapture,$cordovaMedia)

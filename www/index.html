@@ -387,6 +387,7 @@ div.tag
 	    {		
 		$scope.close=function()
 			{					
+			alert("close");
 			$ionicNavBarDelegate.back();
 			//$state.go("tabs.list");
 			}
@@ -509,7 +510,7 @@ div.tag
 						<button class="button button-clear button-negative button-icon ion-close" ng-click="close()"></button>						
 					</ion-nav-buttons>					
                 </ion-nav-bar>
-				<div style="height:230px; width:100%;background-position-x:{{background.x}}px; background-size:{{background.h}}%;background-image:url('{{img}}');position:relative;text-align:center">
+				<div style="height:530px; width:100%;background-position-x:{{background.x}}px; background-size:{{background.h}}%;background-image:url('{{img}}');position:relative;text-align:center">
 					<div style="width:100%; margin-top:45px;position:relative; height:230px">
 						<button class="button icon ion-gear-a button-clear" style="color:white; position:absolute; right:5px;bottom:5px;"></button>												
 					</div>
@@ -517,7 +518,7 @@ div.tag
 
                 <ion-content padding="false" scroll="true" on-scroll="scrolling(e,scrollTop)">					
  					<ion-list>        		     
-						<div style="height:200px;"></div>					
+						<div style="height:220px;"></div>					
 						<ion-item class="item-icon-left"><i class="icon ion-chatbubble"></i>Send sms</ion-item>
 						<ion-item class="item-icon-left"><i class="icon ion-email"></i>Send mail</ion-item>
 						<ion-item class="item-icon-left item-icon-right"><i class="icon ion-chatbubble-working"></i>Call lacma<a class="icon ion-ios-telephone-outline" href="tel:3284590306" style="text-decoration:none"></a></ion-item>
@@ -539,11 +540,10 @@ div.tag
 						<ion-item class="item-icon-left"><i class="icon ion-headphone"></i>Audio</ion-item>
 						<ion-item class="item-icon-left"><i class="icon ion-film-marker"></i>Video</ion-item>											
 					</ion-list>               
-					<ion-list>        		     						
-						<ion-item class="item-divider">Works</ion-item>
-						<ion-item class="item-thumbnail-left"><img src="http://italyartla.com/wp-content/uploads/2013/03/lacma_mappa2.jpg"><h2>Mappa</h2><p>Alighiero Boetti</p></ion-item>
-						<ion-item class="item-thumbnail-left"><img src="http://italyartla.com/wp-content/uploads/2013/03/lacma_sonata_paladino.jpg"><h2>Sonata</h2><p>Mimmo Paladino</p></ion-item>
-						<ion-item class="item-thumbnail-left"><img src="http://italyartla.com/wp-content/uploads/2013/03/lacma_young_woman_people.jpg"><h2>Young Woman of the People</h2><p>Modigliani</p></ion-item>					
+					<ion-list ng-controller="aroundmeController">        		     						
+						<ion-item class="item-divider">Works</ion-item>							
+						<ion-item class="item-thumbnail-left" ng-repeat="item in aroundme | filter:{museum:option.originalid}" ng-click="item.onClick()"><img ng-src="{{item.img}}"><h2>{{item.name}}</h2><p ng-bind-html="item.description"></p></ion-item>
+												
 					</ion-list>					
                 </ion-content>
             </ion-view>

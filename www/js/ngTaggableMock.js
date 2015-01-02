@@ -22,7 +22,9 @@ angular.module("taggableMock",["taggable"])
 			};
 		if(data.optional!=null)
 			{
-			var option = JSON.parse(data.optional);
+			result.option = JSON.parse(data.optional);
+			result.museum = result.option.museum;
+			if(result.museum==result.option.originalid) result.museum=null;
 			}
 		if(data.position!=null)
 			result.position=
