@@ -2,6 +2,9 @@ var style=[{"featureType":"landscape","stylers":[{"saturation":-100},{"lightness
 
 angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 .constant("url","95.110.224.34:8080")
+.constant('$ionicLoadingConfig', {
+  template: '<i class="icon ion-loading-a"></i>'
+	})
 .factory("uuid",function()
 	{
 	var UUID = function()
@@ -47,6 +50,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			{
 			var deferred = $q.defer();
 			var act = this;
+		
 			var time=setTimeout(function()
 				{			
 				var position ={"timestamp":1419368552972,"coords":{"speed":null,"heading":null,"altitudeAccuracy":null,"accuracy":37,"altitude":null,"longitude":8.0055436,"latitude":45.5643368}};
@@ -184,48 +188,22 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		}
 	
     }])
-
-.factory("items",["$resource","url","gps","$q","$http","user","$beacons",function($resource,url,gps,$q,$http,user,$beacons)
-    {	
-	var filter = function(data)
-		{
+.service("filter",["gps",function(gps)
+    {
+	this.item= function(data)
+		{		
 		var result = 
 			{									
 			owner:		null,
 			id:			data.id,
 			name:		data.name,
 			description:data.description,
+			type:		"photo",
 			date:		"",
 			img:		data.img,
 			cat:		[],
 			beacon:		data.beacon
-			};
-		if(data.id=="1d62a565-5cd9-4ad3-b432-dc85221f559a")			
-			$beacons.add(
-				{
-				uuid:"ACFD065E-C3C0-11E3-9BBE-1A514932AC01",
-				minor:0,
-				major:1,
-				taggable:result,
-				name:"Ulisse",
-				change:function(data)
-					{
-					this.taggable.position.distance=this.accuracy;
-					}
-				});	
-		if(data.id=="59ab41d4-a1b9-482a-af93-9712e8235f8d")
-			$beacons.add(
-				{
-				uuid:"ACFD065E-C3C0-11E3-9BBE-1A514932AC01",
-				minor:0,
-				major:0,
-				taggable:result,
-				name:"Paperone",
-				change:function(data)
-					{
-					this.taggable.position.distance=this.accuracy;
-					}
-				});
+			};		
 		
 		if(data.position!=null)
 			result.position=
@@ -240,8 +218,11 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 						new google.maps.LatLng(data.position.lat, data.position.lng))
 				}
 		
-		return result;
+		return result;		
 		}
+    }])
+.factory("items",["$resource","url","gps","$q","$http","user","$beacons","filter",function($resource,url,gps,$q,$http,user,$beacons,filter)
+    {	
 	return {
 		save:function(obj)
 			{				
@@ -281,14 +262,16 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 					}
 			$http.get("http://"+url+"/relay-service-web/rest/land/"+item.id).success(function(data)
 				{				
-				deferred.resolve(filter(data.attributes));
+				deferred.resolve(filter.item(data.attributes));
 				})					
 			return deferred.promise;
 			},
 		query:function()
-			{	
+			{					
 			var act = this;
-			var deferred = $q.defer();				
+			var deferred = $q.defer();
+			if(this.list!=null)
+				deferred.resolve(this.list);
 			gps.refresh().then(function()
 				{						
 				$http.get("http://"+url+"/relay-service-web/rest/land",
@@ -306,7 +289,7 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 						for(var i in data.entities)
 							{							
 							var val = data.entities[i].attributes;
-							result.push(filter(val))									
+							result.push(filter.item(val))									
 							}
 						act.list=result;
 						deferred.resolve(result);			
@@ -317,7 +300,6 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			}
 		}
     }])
-
 .controller("loginController",["$cordovaVibration","$scope","user",function($cordovaVibration,$scope,user)
     {
 	$scope.my=function(mail,name)
@@ -428,13 +410,18 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 		}
 		
     }])
-.service("single",["$rootScope",function($rootScope)
+.service("single",["$rootScope","$state",function($rootScope,$state)
     {
-	this.open=function(uid)
+	this.photo=function(uid)
 		{
 		$rootScope.$broadcast('singleTaggable',{id:uid});	
 		}
+	this.museum=function(uid)
+		{
+		$state.go("tabs.singleMuseum",{id:uid});
+		}
     }])
+
 .controller("appController",["items","$stateParams","$scope","$ionicModal","$state",function(items, $stateParams,$scope,$ionicModal,$state)
     {	
 	$ionicModal.fromTemplateUrl('single.html', function($ionicModal) 
@@ -456,24 +443,83 @@ angular.module("taggable",["ngResource","uiGmapgoogle-maps"])
 			});
 		})
     }])
-    
-.controller("aroundmeController",["$scope","items","$ionicLoading","$ionicModal","$stateParams","$rootScope","single",function($scope,items,$ionicLoading,$ionicModal,$stateParams,$rootScope,single)
+.controller("museumListController",["$scope","items","$ionicLoading","$ionicModal","$stateParams","$rootScope","single",function($scope,items,$ionicLoading,$ionicModal,$stateParams,$rootScope,single)
     {				
-	$ionicLoading.show();	 
-		
+	$ionicLoading.show();
+	$scope.title='Collections';
+	$scope.filter={type:'museum'};
 	items.query().then(function(data)
 		{	
 		$ionicLoading.hide();
 		for(var i in data)
 			data[i].onClick=function()
 				{
-				single.open(this.id);				
+				single[this.type](this.id);				
 				}		
 		$scope.aroundme=data;
 		
 		if($stateParams.uid!=null)
 			single.open($stateParams.uid);
 		})			
+    }])   
+.controller("tourListController",["$scope","items","$ionicLoading","$ionicModal","$stateParams","$rootScope","single",function($scope,items,$ionicLoading,$ionicModal,$stateParams,$rootScope,single)
+    {				
+	$ionicLoading.show();	
+	$scope.title='Tours';
+	$scope.filter={type:'tour'};
+	items.query().then(function(data)
+		{	
+		$ionicLoading.hide();
+		for(var i in data)
+			data[i].onClick=function()
+				{
+				single[this.type](this.id);				
+				}		
+		$scope.aroundme=data;
+		
+		if($stateParams.uid!=null)
+			single.open($stateParams.uid);
+		})			
+    }])   
+.controller("aroundmeController",["$scope","items","$ionicLoading","$ionicModal","$stateParams","$rootScope","single",function($scope,items,$ionicLoading,$ionicModal,$stateParams,$rootScope,single)
+    {				
+	$ionicLoading.show();	
+	$scope.title='Taggables';
+	$scope.filter={type:'photo'};
+	items.query().then(function(data)
+		{	
+		$ionicLoading.hide();
+		for(var i in data)
+			data[i].onClick=function()
+				{
+				single[this.type](this.id);				
+				}		
+		$scope.aroundme=data;
+		
+		if($stateParams.uid!=null)
+			single.open($stateParams.uid);
+		})			
+    }])
+.controller("singleTaggableController",["items","$stateParams","$scope","$ionicScrollDelegate",function(items,$stateParams,$scope,$ionicScrollDelegate)
+    {
+	$scope.background=
+		{
+		h:140,
+		x:0
+		}	
+	$scope.scrolling=function(e,y)
+		{				
+		this.y=y;
+		$scope.background.h=140-y/4;
+		$scope.background.x=y/4;
+		this.$apply();
+		}
+	items.get({id:$stateParams.id}).then(function(data)
+		{		
+		angular.extend($scope,data);
+		
+		
+		});
     }])
 .controller("audioController",["$scope","$cordovaCapture","$cordovaMedia",function($scope,$cordovaCapture,$cordovaMedia)
     {
