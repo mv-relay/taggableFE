@@ -2,12 +2,55 @@ angular.module("taggableMock",["taggable"])
 .constant("$beacons_refresh",2000)
 .constant("type",{
 	museum:["-1247508489","1920937446","-456054142"]})
-.service("filter",["gps","type",function(gps,type)
+.service("items",["$q","gps","$http","user","filter",function($q,gps,$http,user,filter)
+    {
+	this.get=function(item)
+		{
+		var act = this;
+		var deferred = $q.defer();
+		for(var i in act.list)
+			if(act.list[i].id==item.id)
+				{
+				deferred.resolve(act.list[i]);
+				return deferred.promise;
+				}							
+		return deferred.promise;
+		};
+	this.query=function()
+		{
+		var act = this;
+		var deferred = $q.defer();
+		if(this.list!=null)
+			deferred.resolve(this.list);
+		gps.refresh().then(function()
+			{			
+			$http.get("/data/items.json",
+					{params:
+						{						
+						lat:gps.latitude,
+						lng:gps.longitude,
+						user:user.mail
+						}
+					}).success(
+					function(data)
+					{						
+					var result=[];						
+					for(var i in data.entities)
+						{							
+						var val = data.entities[i].attributes;
+						result.push(filter.item(val))									
+						}
+					act.list=result;
+					deferred.resolve(result);			
+					});
+			});
+		return deferred.promise;
+		};
+    }])
+.service("filter",["gps","type","like","single",function(gps,type,like,single)
     {
 	this.item= function(data)
-		{		
-		
-		
+		{				
 		var result = 
 			{									
 			owner:		null,
@@ -15,11 +58,32 @@ angular.module("taggableMock",["taggable"])
 			name:		data.name,
 			description:data.description,
 			type:		data.type,
-			date:		"",
+			date:		"",			
 			img:		data.img,
 			cat:		[],
-			beacon:		data.beacon
+			beacon:		data.beacon,
+			like:		0,
+			onClick:	function()
+				{
+				single[this.type](this.id);				
+				},
+			addLike:function()
+				{
+				like.add(this.id);
+				this.like++;
+				},
+			addComment:function()
+				{
+				alert("comment");
+				},
+			share:function()
+				{
+				alert("share");
+				}
 			};
+		
+		if(data.like!=null)
+			result.like=data.like;
 		if(data.optional!=null)
 			{
 			result.option = JSON.parse(data.optional);
@@ -27,17 +91,21 @@ angular.module("taggableMock",["taggable"])
 			if(result.museum==result.option.originalid) result.museum=null;
 			}
 		if(data.position!=null)
+			{
 			result.position=
 				{				
 				lat:data.position.lat,
-				lng:data.position.lng,
-				distance: google.maps.geometry.spherical.computeDistanceBetween(
+				lng:data.position.lng				
+				}
+			try	{
+				result.position.distance=google.maps.geometry.spherical.computeDistanceBetween(
 						new google.maps.LatLng(data.position.lat, data.position.lng),
 						new google.maps.LatLng(gps.latitude,gps.longitude)),
-				direction: google.maps.geometry.spherical.computeHeading(
+				result.position.direction=google.maps.geometry.spherical.computeHeading(
 						new google.maps.LatLng(gps.latitude,gps.longitude),
 						new google.maps.LatLng(data.position.lat, data.position.lng))
-				}
+				}catch(e){}
+			}
 		
 		
 		/*if($.inArray(data.id,type.museum)>=0)

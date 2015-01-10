@@ -230,6 +230,18 @@ div.tag
         			}
       			}
 			})
+		 .state('tabs.singleTour', 
+			{
+			url: "/tour/single/{id}",			
+			views: 
+      			{
+        		'list-tab': 
+        			{
+        			controller: 'singleTaggableController',
+        			templateUrl: "tour/single.html"
+        			}
+      			}
+			})
 		.state('intro', 
 			{
 			url: "/",		
@@ -248,7 +260,20 @@ div.tag
           			controller: 'aroundmeController'
         			}
       			}
-    		})    		
+    		})  
+    	.state('tabs.museumMap', 
+   				{
+   				cache: true,
+   				url : '/museum/map',
+   				views: 
+   		  			{
+   		    		'list-tab': 
+   		    			{
+   		      			templateUrl: "collectionsMap.html",
+   		      			controller: 'mapController'
+   		    			}
+   		  			}
+   				})
    		.state('tabs.museumList', 
    				{
    				cache: true,
@@ -257,8 +282,8 @@ div.tag
    		  			{
    		    		'list-tab': 
    		    			{
-   		      			templateUrl: "list.html",
-   		      			controller: 'museumListController'
+   		      			templateUrl: "collections.html",
+   		      			controller: 'aroundmeController'
    		    			}
    		  			}
    				})
@@ -270,8 +295,8 @@ div.tag
    		  			{
    		    		'list-tab': 
    		    			{
-   		      			templateUrl: "list.html",
-   		      			controller: 'tourListController'
+   		      			templateUrl: "tourList.html",
+   		      			controller: 'aroundmeController'
    		    			}
    		  			}
    				})
@@ -340,7 +365,7 @@ div.tag
 	    		'map-tab': 
 	    			{
 	      			templateUrl: "map.html",
-	      			controller: 'mapCtrl'
+	      			controller: 'mapController'
 	    			}
 	  			}
 			})
@@ -352,7 +377,7 @@ div.tag
 	    		'map-tab': 
 	    			{
 	      			templateUrl: "single.html",
-	      			controller: 'singleCtrl'
+	      			controller: 'singleTaggableController'
 	    			}
 	  			}
 			})
@@ -518,11 +543,12 @@ div.tag
 
                 <ion-content padding="false" scroll="true" on-scroll="scrolling(e,scrollTop)">					
  					<ion-list>        		     
-						<div style="height:220px;"></div>					
-						<ion-item class="item-icon-left"><i class="icon ion-chatbubble"></i>Send sms</ion-item>
-						<ion-item class="item-icon-left"><i class="icon ion-email"></i>Send mail</ion-item>
-						<ion-item class="item-icon-left item-icon-right"><i class="icon ion-chatbubble-working"></i>Call lacma<a class="icon ion-ios-telephone-outline" href="tel:3284590306" style="text-decoration:none"></a></ion-item>
-						<ion-item class="item-icon-left"><i class="icon ion-card"></i>Buy ticket</ion-item>						
+						<div style="height:220px;"></div>
+						<ion-item>
+							<a class="item-icon-left" style="float:left; padding-left:36px;text-decoration:none; color:black" href="mailto:massimiliano.regis@gmail.com"><i class="icon ion-email"></i>Send mail</a>
+							<a class="item-icon-right" style="float:right; padding-right:36px;text-decoration:none; color:black" href="tel:3284590306"><i class="icon ion-ios-telephone-outline"></i>Call</a>
+						</ion-item>						
+						<a class="item item-icon-left" href="http://boingshop.ekaros.it/boing.pkpass"><i class="icon ion-card"></i>Buy ticket</a>						
 					</ion-list>
 					
 						<ion-item id="openDescription" class="item-icon-left item-text"  style="display:none" onclick="$('#openDescription').hide(); $('#closeDescription').show();">
@@ -610,57 +636,33 @@ div.tag
     				<p>{{obj.position.distance|distance}}</p>
   				</div>
 
-  <div class="item item-body">
-    <img class="full-image" ng-src="{{obj.img}}">
-    <p ng-bind-html="obj.description">
-      {{obj.description}}
-    </p>
-    <p>
-      <a href="#" class="subdued">1 Like</a>
-      <a href="#" class="subdued">5 Comments</a>
-    </p>
-  </div>
+  				<div class="item item-body">
+    				<img class="full-image" ng-src="{{obj.img}}">
+    				<p ng-bind-html="obj.description">
+      					{{obj.description}}
+    				</p>
+    				<p>
+     					<a class="subdued">{{obj.like|like}}</a>
+      					<a href="#" class="subdued">5 Comments</a>
+    				</p>
+  				</div>
 
-  <div class="item tabs tabs-secondary tabs-icon-left">
-    <a class="tab-item" href="#">
-      <i class="icon ion-thumbsup"></i>
-      Like
-    </a>
-    <a class="tab-item" href="#">
-      <i class="icon ion-chatbox"></i>
-      Comment
-    </a>
-    <a class="tab-item" href="#">
-      <i class="icon ion-share"></i>
-      Share
-    </a>
-  </div>
-
+  				<div class="item tabs tabs-secondary tabs-icon-left">
+    				<a class="tab-item" ng-click="obj.addLike()">
+      					<i class="icon ion-thumbsup"></i>Like
+    				</a>
+    				<a class="tab-item"  ng-click="obj.addComment()">
+      					<i class="icon ion-chatbox"></i>Comment
+					</a>
+    				<a class="tab-item"  ng-click="obj.share()">
+      					<i class="icon ion-share"></i>Share
+    				</a>
+  				</div>
 			</div>
-
     	</ion-content>
   	</ion-modal-view>
 	</script>
 	
-	<script id="map.html" type="text/ng-template">
-            <ion-view title="List">
-                <ion-header-bar class="bar-assertive">
-                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
-                    <h1 class="title" ng-click="add()">Map</h1>
-                </ion-header-bar>
-                <ion-content scroll="false" data-tap-disabled="true">                    
- 					<div id="map_canvas" tap-disabled="true">
-			    		<ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" bounds="map.bounds" options="map.options">
-			        		<ui-gmap-markers models="markers" coords="'self'" icon="'icon'" click="'onClick'">
-								<!--ui-gmap-windows show="show">
-                					<div ng-non-bindable>{{id}}</div>
-            					</ui-gmap-windows-->
-							</ui-gmap-markers>
-			    		</ui-gmap-google-map>
-					</div>
-                </ion-content>
-            </ion-view>
-    </script>
 	<script id="shot.html" type="text/ng-template">
             <ion-view title="List">
                 <ion-header-bar class="bar-assertive">
@@ -700,20 +702,160 @@ div.tag
             </ion-view>
     </script>
 
+
+
+	<script id="map.html" type="text/ng-template">
+            <ion-view title="List">
+                <ion-header-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title" ng-click="add()">Map</h1>
+                </ion-header-bar>
+                <ion-content scroll="false" data-tap-disabled="true">                    
+ 					<div id="map_canvas" tap-disabled="true">
+			    		<ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" bounds="map.bounds" options="map.options">
+			        		<ui-gmap-markers models="markers" coords="'self'" icon="'icon'" click="'onClick'">
+								<!--ui-gmap-windows show="show">
+                					<div ng-non-bindable>{{id}}</div>
+            					</ui-gmap-windows-->
+							</ui-gmap-markers>
+			    		</ui-gmap-google-map>
+					</div>
+                </ion-content>
+            </ion-view>
+    </script>
+	<script id="collectionsMap.html" type="text/ng-template">
+            <ion-view title="Collections map">
+                 <ion-nav-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>                    
+					<ion-nav-buttons side="right">
+						<button class="button button-icon icon ion-ios-list-outline" ng-click="toList()"></button>
+					</ion-nav-buttons>
+                </ion-nav-bar>
+                <ion-content scroll="false" data-tap-disabled="true">                    
+ 					<div id="map_canvas" tap-disabled="true">
+			    		<ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" bounds="map.bounds" options="map.options">
+			        		<ui-gmap-marker ng-repeat="item in markers | filter:{type:'museum'}" coords="item.position" idkey="item.id" icon="item.icon" click="item.single"></ui-gmap-marker>
+							<ui-gmap-marker coords="me.position" idkey="'me'" icon="me.icon"></ui-gmap-marker>
+			    		</ui-gmap-google-map>
+					</div>
+                </ion-content>
+            </ion-view>
+    </script>
+	<script id="collections.html" type="text/ng-template">
+            <ion-view title="Collections">
+                <ion-nav-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title"></h1>
+					<ion-nav-buttons side="right">
+						<button class="button button-icon icon ion-ios-navigate-outline" ng-click="toMap()"></button>
+					</ion-nav-buttons>
+                </ion-nav-bar>
+                <ion-content padding="true" scroll="true">                    
+ 					<ion-list>        		     
+						<ion-item ng-repeat="item in aroundme | filter:{type:'museum'}|orderBy:position.distance" class="item-thumbnail-left" style="position:relative;" ng-click="item.onClick()">
+							<div class="item-image" style="overflow:hidden">
+								<img ng-src="{{item.img}}" style="width:150px"/>
+							</div>
+							<H2>{{item.name}}</h2><P ng-bind-html="item.description">{{item.description}}</P>
+							<div style="position:absolute;bottom:6px;">{{item.like|like}}</div>
+							<div style="position:absolute;bottom:6px; right:10px;">
+								<div class="distance" style="float:right">{{item.position.distance|distance}}</div>
+								<div class="icon ion-navigate" style="transform: rotate({{item.position.direction}}deg);transform-origin:10px 10px; height:20px; width:20px;float: left;"></div>
+							</div>
+						</ion-item>						
+					</ion-list>
+                </ion-content>
+            </ion-view>
+    </script>
+
+	<!-- TOUR LIST -->
+	<script id="tourList.html" type="text/ng-template">
+            <ion-view title="Tours">
+                <ion-nav-bar class="bar-assertive">
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <h1 class="title"></h1>
+					<ion-nav-buttons side="right">
+						<button class="button button-icon icon ion-ios-navigate-outline" ng-click="toMap()"></button>
+					</ion-nav-buttons>
+                </ion-nav-bar>
+                <ion-content padding="true" scroll="true">                    
+ 					<ion-list>        		     
+						<ion-item ng-repeat="item in aroundme | filter:{type:'tour'}|orderBy:position.distance" class="item-thumbnail-left" style="position:relative;" ng-click="item.onClick()">
+							<div class="item-image" style="overflow:hidden">
+								<img ng-src="{{item.img}}" style="width:150px"/>
+							</div>
+							<H2>{{item.name}}</h2><P ng-bind-html="item.description">{{item.description}}</P>
+							<div style="position:absolute;bottom:6px;">{{item.like|like}}</div>
+							<div style="position:absolute;bottom:6px; right:10px;">
+								<div class="distance" style="float:right">{{item.position.distance|distance}}</div>
+								<div class="icon ion-navigate" style="transform: rotate({{item.position.direction}}deg);transform-origin:10px 10px; height:20px; width:20px;float: left;"></div>
+							</div>
+						</ion-item>						
+					</ion-list>
+                </ion-content>
+            </ion-view>
+    </script>
+    <script id="tour/single.html" type="text/ng-template">
+            <ion-view title="{{name}}">
+				
+                <ion-nav-bar class="bar-assertive">
+									
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <ion-nav-buttons side="right">
+						<button class="button button-clear button-negative button-icon ion-close" ng-click="close()"></button>						
+					</ion-nav-buttons>					
+                </ion-nav-bar>
+				<div style="height:530px; width:100%;background-position-x:{{background.x}}px; background-size:{{background.h}}%;background-image:url('{{img}}');position:relative;text-align:center">
+					<div style="width:100%; margin-top:45px;position:relative; height:230px">
+						<button class="button icon ion-gear-a button-clear" style="color:white; position:absolute; right:5px;bottom:5px;"></button>												
+					</div>
+				</div>
+
+                <ion-content padding="false" scroll="true" on-scroll="scrolling(e,scrollTop)">					
+ 					<ion-list>        		     
+						<div style="height:220px;"></div>											
+						<ion-item id="openDescription" class="item-icon-left item-text"  style="display:none" onclick="$('#openDescription').hide(); $('#closeDescription').show();">
+							<i class="icon ion-arrow-down-b"></i>
+							<span ng-bind-html="description"></span>
+						</ion-item>
+						<ion-item  id="closeDescription" class="item-icon-left"  onclick="$('#closeDescription').hide(); $('#openDescription').show();">
+							<i class="icon ion-arrow-right-b"></i>
+							<span ng-bind-html="description"></span>
+						</ion-item>
+					</ion-list>    
+					<ion-list>        		     
+						<ion-item class="item-divider">Content</ion-item>	
+						<ion-item class="item-icon-left"><i class="icon ion-calendar"></i>Events</ion-item>			
+						<ion-item class="item-icon-left"><i class="icon ion-headphone"></i>Audio</ion-item>
+						<ion-item class="item-icon-left"><i class="icon ion-film-marker"></i>Video</ion-item>											
+					</ion-list>               
+					<ion-list ng-controller="aroundmeController">        		     						
+						<ion-item class="item-divider">Artworks</ion-item>
+						<ion-item class="item-thumbnail-left" ng-repeat="item in aroundme | inArray:option.tour" ng-click="item.onClick()"><img ng-src="{{item.img}}"><h2>{{item.name}}</h2><p ng-bind-html="item.description"></p></ion-item>					
+					</ion-list>					
+                </ion-content>
+            </ion-view>
+    </script>
+	<!-- TOUR LIST -->
+
 	<script id="list.html" type="text/ng-template">
             <ion-view title="{{title}}">
                 <ion-nav-bar class="bar-assertive">
                     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
                     <h1 class="title"></h1>
+					<ion-nav-buttons side="right">
+						<button class="button button-icon icon ion-ios-navigate-outline"></button>
+					</ion-nav-buttons>
                 </ion-nav-bar>
                 <ion-content padding="true" scroll="true">                    
  					<ion-list>        		     
-						<ion-item ng-repeat="item in aroundme | filter:filter|orderBy:position.distance" class="item-thumbnail-left" ng-click="item.onClick()">
+						<ion-item ng-repeat="item in aroundme | filter:filter|orderBy:position.distance" class="item-thumbnail-left" style="position:relative;" ng-click="item.onClick()">
 							<div class="item-image" style="overflow:hidden">
 								<img ng-src="{{item.img}}" style="width:150px"/>
 							</div>
 							<H2>{{item.name}}</h2><P ng-bind-html="item.description">{{item.description}}</P>
-							<div style="float:right">
+							<div style="position:absolute;bottom:6px;">{{item.like|like}}</div>
+							<div style="position:absolute;bottom:6px; right:10px;">
 								<div class="distance" style="float:right">{{item.position.distance|distance}}</div>
 								<div class="icon ion-navigate" style="transform: rotate({{item.position.direction}}deg);transform-origin:10px 10px; height:20px; width:20px;float: left;"></div>
 							</div>
