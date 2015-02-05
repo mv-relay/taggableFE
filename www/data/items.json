@@ -17,8 +17,15 @@
         	{
             "lat": 34.05344,
             "lng": -118.25066
-        	},
-        "like": null,
+        	},        
+        "likes": {
+	          "id": null,
+	          "resources": null,
+	          "type": null,
+	          "user": null,
+	          "count": 1,
+	          "myLike": false
+	        },
         "medias": null
     	}
     },

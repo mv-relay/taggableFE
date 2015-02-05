@@ -1,7 +1,6 @@
 angular.module("taggableMock",["taggable"])
 .constant("$beacons_refresh",2000)
-.constant("type",{
-	museum:["-1247508489","1920937446","-456054142"]})
+/*
 .service("items",["$q","gps","$http","user","filter",function($q,gps,$http,user,filter)
     {
 	this.get=function(item)
@@ -46,11 +45,11 @@ angular.module("taggableMock",["taggable"])
 			});
 		return deferred.promise;
 		};
-    }])
-.service("filter",["gps","type","like","single",function(gps,type,like,single)
+    }])*/
+.service("filter",["gps","like","single",function(gps,like,single)
     {
 	this.item= function(data)
-		{				
+		{			
 		var result = 
 			{									
 			owner:		null,
@@ -62,7 +61,27 @@ angular.module("taggableMock",["taggable"])
 			img:		data.img,
 			cat:		[],
 			beacon:		data.beacon,
-			like:		0,
+			likes:		{count:0,my:false},
+			like:		function()
+				{								
+				if(this.likes.my) 
+					{					
+					like.delete(this.id).then(function()
+						{
+						this.likes.count--;
+						this.likes.my=false;
+						});
+					}
+				else
+					{					
+					like.add(this.id).then(function()
+						{
+						this.likes.count++;
+						this.likes.my=true;	
+						});
+					}
+				return false;
+				},
 			onClick:	function()
 				{
 				single[this.type](this.id);				
@@ -79,11 +98,61 @@ angular.module("taggableMock",["taggable"])
 			share:function()
 				{
 				alert("share");
+				},
+			audio:
+				{
+				open:false,
+				file:null,
+				toggle:function()
+					{
+					if(this.open) 	this.pause();
+					else		this.play();
+					},
+				play:function()
+					{
+					this.open=true; 
+					$('#audio audio').attr("src",this.file);
+					$('#audio audio')[0].play();
+					},
+				pause:function()
+					{
+					this.open=false; 
+					$('#audio audio')[0].pause();
+					}
+				},
+			video:
+				{
+				open:false,
+				file:null,
+				toggle:function()
+					{
+					if(this.open) 	this.pause();
+					else		this.play();
+					},
+				play:function()
+					{
+					this.open=true; 
+					$('#video video')[0].play();
+					},
+				pause:function()
+					{
+					this.open=false; 
+					$('#video video')[0].pause();
+					}
 				}
-			};
+			};		
+		for(i in data.medias)
+			{
+			if(data.medias[i].type=="mp3")
+				result.audio.file=data.medias[i].path;
+			}
 		
-		if(data.like!=null)
-			result.like=data.like;
+		if(data.likes!=null)
+			result.likes=
+				{
+				count:data.likes.count,
+				my:data.likes.myLike
+				}
 		if(data.optional!=null)
 			{
 			result.option = JSON.parse(data.optional);
