@@ -1,0 +1,39 @@
+<ion-modal-view>
+    	<ion-header-bar class="bar-assertive">            
+			<h1 class="title">{{obj.name}}</h1>
+			<div class="button button-clear" ng-click="modal.hide()"><span class="icon ion-close"></span></div>
+        </ion-header-bar>
+    	<ion-content>
+      		
+			<div class="list card">
+  				<div class="item item-avatar">
+    				<i class="icon ion-images" style="font-size: 43px;float: left;margin-left: -50px;"></i>
+    				<h2>{{obj.name}}</h2>
+    				<p>{{obj.position.distance|distance}}</p>
+  				</div>
+
+  				<div class="item item-body">
+    				<img class="full-image" ng-src="{{obj.img}}">
+    				<p ng-bind-html="obj.description">
+      					{{obj.description}}
+    				</p>
+    				<p>
+     					<a class="subdued">{{obj.like.count|like}}</a>
+      					<a href="#" class="subdued">5 Comments</a>
+    				</p>
+  				</div>
+
+  				<div class="item tabs tabs-secondary tabs-icon-left">
+    				<a class="tab-item" ng-click="obj.like()">
+      					<i class="icon ion-thumbsup"></i>Like
+    				</a>
+    				<a class="tab-item"  ng-click="obj.addComment()">
+      					<i class="icon ion-chatbox"></i>Comment
+					</a>
+    				<a class="tab-item"  ng-click="obj.share()">
+      					<i class="icon ion-share"></i>Share
+    				</a>
+  				</div>
+			</div>
+    	</ion-content>
+  	</ion-modal-view>

@@ -46,7 +46,7 @@ angular.module("taggableMock",["taggable"])
 		return deferred.promise;
 		};
     }])*/
-.service("filter",["gps","like","single",function(gps,like,single)
+.service("filter",["gps","like","single","base64","url",function(gps,like,single,base64,url)
     {
 	this.item= function(data)
 		{			
@@ -60,7 +60,7 @@ angular.module("taggableMock",["taggable"])
 			date:		"",			
 			img:		data.img,
 			cat:		[],
-			beacon:		data.beacon,
+			beacon:		data.beacon,			
 			likes:		{count:0,my:false},
 			like:		function()
 				{								
@@ -83,7 +83,8 @@ angular.module("taggableMock",["taggable"])
 				return false;
 				},
 			onClick:	function()
-				{
+				{					
+				debugger;
 				single[this.type](this.id);				
 				},
 			addLike:function()
@@ -140,13 +141,38 @@ angular.module("taggableMock",["taggable"])
 					$('#video video')[0].pause();
 					}
 				}
-			};		
+			};			
+		
+		if(data.img.match("95.110.224.34")!=null)			
+			result.img = "http://"+url+"/relay-service-web/rest/land/media/THUMB/"+data.id+".jpg";
+			
+			
 		for(i in data.medias)
 			{
 			if(data.medias[i].type=="mp3")
 				result.audio.file=data.medias[i].path;
 			}
 		
+		try	{
+			result.route=[]
+			for(var i in data.route.routes)
+				{
+				var tag = data.route.routes[i].taggable
+				result.route.push(
+					{
+					id			:		tag.id,
+					img			:		tag.img,
+					name		:		tag.name,
+					description	:		tag.description,
+					type		:		tag.type,
+					onClick		:		function()
+						{
+						single[this.type](this.id);	
+						}
+					})				
+				}			
+			}
+		catch(e){}
 		if(data.likes!=null)
 			result.likes=
 				{
@@ -216,42 +242,12 @@ angular.module("taggableMock",["taggable"])
 		return result;		
 		}
     }])
-.factory("gps",["$q",function($q)
-    {
-	var gps = 
-		{
-		latitude:null,
-		longitude:null,
-		follow:function()
-			{
-			var deferred = $q.defer();
-			act = this;
-			this.refresh(function()
-				{				
-				deferred.notify({latitude:act.latitude,longitude:act.longitude})
-				act.follow();
-				})
-			return deferred.promise;
-			},
-		refresh:function(callback)
-			{
-			var deferred = $q.defer();
-			var act = this;
-		
-			//Los Angeles
-			var position ={"timestamp":1419368552972,"coords":{"speed":null,"heading":null,"altitudeAccuracy":null,"accuracy":37,"altitude":null,"longitude":-118.253804,"latitude":34.056915}};
-				act.latitude=position.coords.latitude;
-				act.longitude=position.coords.longitude;
-				deferred.resolve(position);
-			
-			return deferred.promise;
-			}
-		}
-	return gps;
-    }])
 .run(
 	["$beacons","$interval","$beacons_refresh",function($beacons,$interval,$beacons_refresh)
-	    {		if(true)return;
+	    {		
+		console.log("run TaggableMOCK");
+		
+		if(true)return;
 		$interval(function()
 			{
 			if($beacons.delegate.didRangeBeaconsInRegion==null) return;

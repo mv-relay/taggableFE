@@ -1,0 +1,15 @@
+ 			<ion-view title="Artworks map">				                
+                <ion-content scroll="false" data-tap-disabled="true">					                    
+ 					<div id="map_canvas" tap-disabled="true">
+			    		<ui-gmap-google-map 
+							center="map.center" 
+							zoom="map.zoom" 
+							draggable="true" 
+							bounds="map.bounds" 
+							options="map.options">
+			        		<ui-gmap-marker ng-repeat="item in markers | filter:{type:'photo',name:filter.value}" coords="{latitude:item.position.lat,longitude:item.position.lng}" idkey="item.id" icon="item.icon" click="'onClick'" control="item"></ui-gmap-marker>
+							<ui-gmap-marker coords="me.position" idkey="'me'" icon="me.icon" control="item"></ui-gmap-marker>
+			    		</ui-gmap-google-map>
+					</div>
+                </ion-content>
+            </ion-view>

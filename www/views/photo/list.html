@@ -1,0 +1,19 @@
+ 			<ion-view title="{{title}}">								                			
+                <ion-content padding="true" scroll="true">
+					<ion-refresher on-refresh="refresh()" pulling-icon="ion-arrow-down-c" pulling-text="refresh"></ion-refresher>                 
+ 					<ion-list>						      		     					
+						<ion-item ng-repeat="item in filtered = (aroundme | filter:{type:'photo',name:filter.value} | orderBy:position.distance ) | limitTo:size" class="item-thumbnail-left" style="position:relative;">
+							<div class="item-image" style="overflow:hidden; border-radius:6px;" ng-click="item.onClick()">
+								<img ng-src="{{item.img}}" style="width:150px; display:none;" onload="$(this).show()"/>
+							</div>
+							<H2 ng-click="item.onClick()">{{item.name}}</h2><P ng-bind-html="item.description">{{item.description}}</P>
+							<div style="position:absolute;bottom:6px;" ng-bind-html='item.likes.count|like' ng-class="{liked:item.likes.my}" ng-click="item.like()"></div>
+							<div style="position:absolute;bottom:6px; right:10px;">
+								<div class="distance" style="float:right">{{item.position.distance|distance}}</div>
+								<div class="icon ion-navigate" style="transform: rotate({{item.position.direction}}deg);transform-origin:10px 10px; height:20px; width:20px;float: left;"></div>
+							</div>
+						</ion-item>										
+					</ion-list>
+					<ion-infinite-scroll ng-if="moreData" icon="ion-loading-c" on-infinite="loadData()"></ion-infinite-scroll>
+                </ion-content>
+            </ion-view>

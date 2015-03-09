@@ -35,6 +35,7 @@ angular.module("taggableCordova",["taggable","ngCordova"])
 		return $delegate;
 		}
 	})
+/*
 .factory("gps",["$cordovaGeolocation","$q",function($cordovaGeolocation,$q)
     {
 	var gps = 
@@ -61,7 +62,7 @@ angular.module("taggableCordova",["taggable","ngCordova"])
 			}
 		}
 	return gps;
-    }])
+    }])*/
 .controller("shotController",["$scope","$cordovaCamera","uuid","items","$ionicLoading","$http",function($scope,$cordovaCamera,uuid,items,$ionicLoading,$http)
     {  	
 	$scope.name="";	

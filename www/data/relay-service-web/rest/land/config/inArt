@@ -1,0 +1,38 @@
+{
+    "bar": {
+        "menu": {
+            "class": ["bar-positive", "tabs-item-show"]
+        },
+        "bottom": {
+            "class": ["tabs-balanced", "tabs-item-hide"]
+        },
+        "top": {
+            "class": ["bar-assertive", "tabs-item-show"]
+        }
+    },
+    "menu": [{
+        "name": "Profile",
+        "menu": [{
+            "type": "me"
+        }]
+    }, {
+        "name": "Collections",
+        "menu": [{
+            "name": "Tours",
+            "icon": "ion-map",
+            "href": "#/tour"
+        }, {
+            "name": "Museums",
+            "icon": "ion-images",
+            "href": "#/museum"
+        }, {
+            "name": "Artworks",
+            "icon": "ion-image",
+            "href": "#/artwork"
+        }, {
+            "name": "Preferred",
+            "icon": "ion-thumbsup",
+            "href": "#/preferred"
+        }]
+    }]
+}		

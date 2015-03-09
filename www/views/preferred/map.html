@@ -1,0 +1,10 @@
+ 			<ion-view title="Preferred map">
+                <ion-content scroll="false" data-tap-disabled="true">                    
+ 					<div id="map_canvas" tap-disabled="true">
+			    		<ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" bounds="map.bounds" options="map.options">
+			        		<ui-gmap-marker ng-repeat="item in markers | filter:{type:'photo'}" coords="item.position" idkey="item.id" icon="item.icon" click="item.single"></ui-gmap-marker>
+							<ui-gmap-marker coords="me.position" idkey="'me'" icon="me.icon"></ui-gmap-marker>
+			    		</ui-gmap-google-map>
+					</div>
+                </ion-content>
+            </ion-view>

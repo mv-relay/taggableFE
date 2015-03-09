@@ -1,0 +1,168 @@
+.liked {
+color: blue;
+}
+li input.ng-invalid {
+border-bottom: solid 2px red;
+}
+.angular-google-map-container {
+	width: 100%;
+	height: 100%;
+}
+.scroll {
+  height: 100%;
+}
+</style>
+<style>
+.deselect {
+	opacity: .3;
+}
+
+.slider{height: 100%; text-align: center}
+.box{height: 100%;}
+.details {
+	float: left;
+	font-size: 1em;
+	text-align: center;
+	padding: 2%;
+	background-color: #fff;
+}
+
+.image {
+	float: left;
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: bottom left;
+}
+
+.responsive {
+	height: 275px;
+	width: 25%;
+	box-shadow: 0 0 0 5px white inset;
+}
+
+.gridRepeats:nth-child(4n+1),.gridRepeats:nth-child(4n+2) { .details {
+	background-color:#9CD8D8;
+	
+}
+}
+
+div.tag span
+	{
+	background: none repeat scroll 0 0 #cc2311;
+	}
+div.tag	
+	{
+	background: none repeat scroll 0 0 #ef4e3a;
+	}
+	
+	
+	
+	
+/**********/	
+ion-content
+	{
+	transition-duration: 0.25s;
+	top:44px !important;
+	}
+.has-subheader ion-content
+	{
+	top:88px !important;
+	}
+
+ion-nav-bar.bar-header
+	{
+	z-index:1000;
+	}
+
+ion-header-bar.bar.bar-assertive
+	{
+	transition-duration: 0.25s;
+	display: -webkit-box !important;
+	height:47px;
+	}
+ion-header-bar.bar.bar-assertive.ng-hide
+	{
+	-webkit-transform: translate3d(0px, -47px, 0px);
+	}
+/**********/
+	
+
+/*
+	
+[title="Artworks"] ion-item.leave, [title="Artworks"] ion-item.move
+	{
+  	top:0;
+	}
+[title="Artworks"] ion-item
+	{
+	transition: top 0.25s ease;
+	}
+*/
+
+ion-footer-bar a
+	{
+	transition: top 0 !important;
+	}	
+
+
+
+#map_canvas {
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+        }
+
+        #map_canvas {
+            position: relative;
+        }
+
+        .angular-google-map-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+        }
+
+.loading-container .loading 
+	{
+	padding: 8px;	
+	font-size: 40px;	
+	background-color:transparent;	
+	}
+.disactive
+	{
+	color: saddlebrown;
+	}
+.active
+	{
+	color:white;
+	}
+.item-image
+	{
+	background-image:url('img/itemImage.png');
+	background-size:100%;
+	height:100%;	
+	}
+	/*
+ion-side-menu-content ion-content
+	{
+	padding-top:44px !important;
+	}
+	*/
+.item-text{
+    overflow: initial;
+    white-space: initial;
+}
+.item-text .icon
+	{
+	height: 50px;
+	}
+.item p h2
+	{
+	display:none;
+	}
+.item p
+	{
+	height:40px;
+	}

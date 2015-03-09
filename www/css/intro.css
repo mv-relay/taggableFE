@@ -1,0 +1,78 @@
+#page1
+  {
+  background-size: cover;
+  background-image: url("../img/backgroundGreen.jpg");
+  }
+#page1 .text
+	{
+	position: absolute;	
+	width:100%;
+	top: 20%;
+	color:white;
+	text-align:center;
+	}
+#page1 img
+	{
+	width:150px;
+	}
+#page1 h1
+	{	
+	color:white;
+	font-size: 37px;
+	font-weight: bold;
+	}
+#page2
+{
+  background-size: cover;
+  background-image: url("../img/moto2.jpg");
+  padding:10%;
+}
+
+#logo
+	{
+	position: fixed;
+z-index: 1000;
+width: 40px;
+bottom: 50px;
+left: 50%;
+margin-left: -20px;
+}
+#page3
+{
+  background-size: cover;
+  background-image: url("../img/relax.jpg");
+  padding:10%;
+}
+
+
+ion-slide .text {
+color: white;
+position: absolute;
+bottom: 20%;
+width: 100%;
+text-align: left;
+font-size: 30px;
+line-height: 36px;
+}
+ion-slide h1
+{
+font-size: 48px;
+color: white;
+}
+#page4
+{
+  background-size: cover;
+  background-image: url("../img/salto.jpg");
+  padding:10%;
+}
+
+#page5
+{
+  background-size: cover;
+  background-image: url("../img/sfondo.jpg");
+  padding:10%;
+}
+
+
+
+

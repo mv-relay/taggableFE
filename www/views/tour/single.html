@@ -1,0 +1,42 @@
+ 			<ion-view title="{{name}}">				
+                <ion-nav-bar class="bar-assertive">
+									
+                    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+                    <ion-nav-buttons side="right">
+						<button class="button button-clear button-negative button-icon ion-close" ng-click="close()"></button>						
+					</ion-nav-buttons>					
+                </ion-nav-bar>
+				<div style="height:530px; width:100%;background-position-x:{{background.x}}px; background-size:{{background.h}}%;background-image:url('{{img}}');position:relative;text-align:center">
+					<div style="width:100%; margin-top:45px;position:relative; height:230px">
+						<button class="button icon ion-gear-a button-clear" style="color:white; position:absolute; right:5px;bottom:5px;"></button>												
+					</div>
+				</div>
+
+                <ion-content padding="false" scroll="true" on-scroll="scrolling(e,scrollTop)">					
+ 					<ion-list>        		     
+						<div style="height:220px;"></div>
+						<ion-item  class="item-icon-left">							    					    						
+     						<i class="subdued" ng-bind-html='likes.count|like' ng-class="{liked:likes.my}" ng-click="like()"></i>
+      						<a href="#" class="subdued">5 Comments</a>    						
+						</ion-item>											
+						<ion-item id="openDescription" class="item-icon-left item-text"  style="display:none" onclick="$('#openDescription').hide(); $('#closeDescription').show();">
+							<i class="icon ion-arrow-down-b"></i>
+							<span ng-bind-html="description"></span>
+						</ion-item>						
+						<ion-item  id="closeDescription" class="item-icon-left"  onclick="$('#closeDescription').hide(); $('#openDescription').show();">
+							<i class="icon ion-arrow-right-b"></i>
+							<span ng-bind-html="description"></span>
+						</ion-item>
+					</ion-list>    
+					<ion-list>        		     
+						<ion-item class="item-divider">Content</ion-item>	
+						<ion-item class="item-icon-left"><i class="icon ion-calendar"></i>Events</ion-item>									
+						<ion-item class="item-icon-left item-icon-right" ng-show="audio.file" ng-click="audio.toggle()"><i class="icon ion-headphone"></i>Audio<i class="icon" ng-class="{'ion-pause':audio.open,'ion-play':!audio.open}"></i></ion-item>
+						<ion-item class="item-icon-left item-icon-right" ng-show="video.file" ng-click="video.toggle()"><i class="icon ion-film-marker"></i>Video<i class="icon" ng-class="{'ion-pause':video.open,'ion-play':!video.open}"></i>											
+					</ion-list>               
+					<ion-list ng-controller="aroundmeController">        		     						
+						<ion-item class="item-divider">Artworks</ion-item>
+						<ion-item class="item-thumbnail-left" ng-repeat="item in route" ng-click="item.onClick()"><img ng-src="{{item.img}}"><h2>{{item.name}}</h2><p ng-bind-html="item.description"></p></ion-item>					
+					</ion-list>					
+                </ion-content>
+            </ion-view>

@@ -1,9 +1,9 @@
 var style=[{"featureType":"landscape","stylers":[{"saturation":-100},{"lightness":65},{"visibility":"on"}]},{"featureType":"poi","stylers":[{"saturation":-100},{"lightness":51},{"visibility":"simplified"}]},{"featureType":"road.highway","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"road.arterial","stylers":[{"saturation":-100},{"lightness":30},{"visibility":"on"}]},{"featureType":"road.local","stylers":[{"saturation":-100},{"lightness":40},{"visibility":"on"}]},{"featureType":"transit","stylers":[{"saturation":-100},{"visibility":"simplified"}]},{"featureType":"administrative.province","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"labels","stylers":[{"visibility":"on"},{"lightness":-25},{"saturation":-100}]},{"featureType":"water","elementType":"geometry","stylers":[{"hue":"#ffff00"},{"lightness":-25},{"saturation":-97}]}];
 
-angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
+angular.module("taggable",["ngResource","ngCommunity","ngBase","uiGmapgoogle-maps"])
 .constant("profile","museum")
 .constant("url","95.110.224.34:8080")
-.constant('$ionicLoadingConfig', {template: '<i class="icon ion-loading-a"></i>'})
+.constant('$ionicLoadingConfig', {template: '<img src="img/icona.png" style="width:50%; -webkit-animation-iteration-count: infinite;" class="pulse animated"/>'})
 .service("uuid",function()
 	{
 	this.random = function()
@@ -49,24 +49,12 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 			var deferred = $q.defer();
 			var act = this;
 		
-			var time=setTimeout(function()
-				{			
-				var position ={"timestamp":1419368552972,"coords":{"speed":null,"heading":null,"altitudeAccuracy":null,"accuracy":37,"altitude":null,"longitude":8.0055436,"latitude":45.5643368}};
+			//Los Angeles
+			var position ={"timestamp":1419368552972,"coords":{"speed":null,"heading":null,"altitudeAccuracy":null,"accuracy":37,"altitude":null,"longitude":-118.253804,"latitude":34.056915}};
 				act.latitude=position.coords.latitude;
 				act.longitude=position.coords.longitude;
 				deferred.resolve(position);
-				},5000)
-			if (navigator.geolocation) 
-				navigator.geolocation.getCurrentPosition(function(position)
-					{
-					clearTimeout(time);
-					try{clearTimeout(time);}catch(e){}						
-					act.latitude=position.coords.latitude;
-					act.longitude=position.coords.longitude;
-					if(callback) callback();
-					
-					deferred.resolve(position);						
-					});
+			
 			return deferred.promise;
 			}
 		}
@@ -179,17 +167,7 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 		}
 	
     }])
-.service("popup",["$ionicPopup",function($ionicPopup)
-	{
-	this.alert=function(title,msg)
-		{
-		$ionicPopup.alert({title:title,template:msg});
-		}
-	this.show=function(title,msg,buttons)
-		{
-		$ionicPopup.alert({title:title,template:msg,buttons:buttons});
-		}
-	}])
+
 .filter("like",[function()
     {
 	return function(input)
@@ -226,7 +204,7 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 		return deferred.promise;
    		}
    }])
-.service("filter",["gps","type","like","single",function(gps,type,like,single)
+.service("filter",["gps","like","single","base64","url",function(gps,like,single,base64,url)
     {
 	this.item= function(data)
 		{			
@@ -240,10 +218,10 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 			date:		"",			
 			img:		data.img,
 			cat:		[],
-			beacon:		data.beacon,
+			beacon:		data.beacon,				
 			likes:		{count:0,my:false},
 			like:		function()
-				{				
+				{								
 				if(this.likes.my) 
 					{					
 					like.delete(this.id).then(function()
@@ -264,8 +242,14 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 				},
 			onClick:	function()
 				{
+				debugger;
 				single[this.type](this.id);				
-				},			
+				},
+			addLike:function()
+				{
+				like.add(this.id);
+				this.like++;
+				},
 			addComment:function()
 				{
 				alert("comment");
@@ -274,16 +258,79 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 				{
 				alert("share");
 				},
+			audio:
+				{
+				open:false,
+				file:null,
+				toggle:function()
+					{
+					if(this.open) 	this.pause();
+					else		this.play();
+					},
+				play:function()
+					{
+					this.open=true; 
+					$('#audio audio').attr("src",this.file);
+					$('#audio audio')[0].play();
+					},
+				pause:function()
+					{
+					this.open=false; 
+					$('#audio audio')[0].pause();
+					}
+				},
 			video:
 				{
 				open:false,
+				file:null,
+				toggle:function()
+					{
+					if(this.open) 	this.pause();
+					else		this.play();
+					},
 				play:function()
 					{
 					this.open=true; 
 					$('#video video')[0].play();
+					},
+				pause:function()
+					{
+					this.open=false; 
+					$('#video video')[0].pause();
 					}
 				}
 			};		
+		
+		if(data.img.match("95.110.224.34")!=null)			
+			result.img = "http://"+url+"/relay-service-web/rest/land/media/THUMB/"+data.id+".jpg";
+		
+		
+		for(i in data.medias)
+			{
+			if(data.medias[i].type=="mp3")
+				result.audio.file=data.medias[i].path;
+			}		
+		
+		try	{
+			result.route=[]
+			for(var i in data.route.routes)
+				{
+				var tag = data.route.routes[i].taggable
+				result.route.push(
+					{
+					id			:		tag.id,
+					img			:		tag.img,
+					name		:		tag.name,
+					description	:		tag.description,
+					type		:		tag.type,
+					onClick		:		function()
+						{
+						single[this.type](this.id);	
+						}
+					})				
+				}			
+			}
+		catch(e){}
 		if(data.likes!=null)
 			result.likes=
 				{
@@ -311,16 +358,16 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 						new google.maps.LatLng(gps.latitude,gps.longitude),
 						new google.maps.LatLng(data.position.lat, data.position.lng))
 				}catch(e){}
-			}		
-		
+			}
 		
 		return result;		
 		}
     }])
-.factory("items",["$resource","url","gps","$q","$http","user","filter",function($resource,url,gps,$q,$http,user,filter)
+.factory("items",["$resource","url","gps","$q","$http","user","filter","loading","popup",function($resource,url,gps,$q,$http,user,filter,loading,popup)
     {	
 	var userMail="";
 	return {
+		singles:{},
 		save:function(obj)
 			{				
 			var item=
@@ -346,22 +393,26 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 				};			
 						
 			return $http.post("http://"+url+"/relay-service-web/rest/land",item);
-			},
+			},		
 		get:function(item)
-			{
+			{			
 			var act = this;			
 			var deferred = $q.defer();
-			for(var i in act.list)
-				{
-				if(act.list[i].id==item.id)
-					{					
-					deferred.resolve(act.list[i]);					
-					return deferred.promise;
-					}
-				}
+			
+			if(act.singles[item.id])
+				deferred.resolve(act.singles[item.id]);					
+
+			loading.show();
 			$http.get("http://"+url+"/relay-service-web/rest/land/"+item.id).success(function(data)
 				{				
-				deferred.resolve(filter.item(data.attributes));
+				var obj = filter.item(data.attributes);
+				act[obj.id]=obj;
+				deferred.resolve(obj);
+				loading.hide();
+				},function()
+				{
+				popup.alert({title:"Error",msg:"sorry! we've a problem"})
+				loading:hide();
 				})					
 			return deferred.promise;
 			},
@@ -388,38 +439,78 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 				})
 			
 			return deferred.promise;
-			},
+			},		
 		query:function()
-			{					
-			var act = this;
-			var deferred = $q.defer();
-			if(this.list!=null && userMail==user.mail)
-				deferred.resolve(this.list);
-			userMail=user.mail;
+			{
+			var deferred 	= $q.defer();
+			var act			= this;
+			if(act.list!=null && act.userMail==user.mail)
+				{
+				deferred.resolve(act.list);
+				return deferred.promise;
+				}
+			act.userMail=user.mail;
+			
+			loading.show();
 			gps.refresh().then(function()
-				{						
+				{				
 				$http.get("http://"+url+"/relay-service-web/rest/land",
-						{params:
-							{						
-							lat:gps.latitude,
-							lng:gps.longitude,
-							mail:user.mail
-							}
-						}).success(
-						function(data)
-						{							
-						var result=[];						
+					{
+					//timeout: deferred.promise,
+					params:
+						{						
+						lat:gps.latitude,
+						lng:gps.longitude,
+						mail:user.mail
+						}
+					})
+				.then(
+					function(data)
+						{						
+						var result=[];
+						data=data.data;
+								
 						for(var i in data.entities)
 							{							
 							var val = data.entities[i].attributes;							
 							result.push(filter.item(val))									
 							}
+						for(var i in user.taggables)
+							{													
+							var tag = filter.item(user.taggables[i]);
+							result.unshift(tag);								
+							act.singles[tag.id]=tag;
+							}
 						act.list=result;
-						deferred.resolve(result);			
-						});
-				})
-			
+								
+						deferred.resolve(result);
+						loading.hide();
+						},
+					function()
+						{							
+						popup.alert("Error","I'm sorry. we have a problem")
+						loading.hide();						
+						}
+					);
+				})	
 			return deferred.promise;
+			},
+		queryX:function(opt)
+			{						
+			var deferred 	=	$q.defer();
+			var act 		= 	this;
+			var actSize 	= 	opt.actSize;
+			var pageSize 	= 	opt.pageSize;
+			
+			this.queryHttp()
+				.then(function(data)
+					{					
+					
+					if(pageSize==null)	{deferred.resolve(data); return;}					
+					deferred.resolve(data.slice(actSize,pageSize+actSize));										
+					});
+			
+			return deferred.promise;			
 			}
 		}
     }])
@@ -436,50 +527,28 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 .controller('mapController', ["$scope","gps","items","$ionicLoading","$ionicModal","single","filter","$state",function($scope,gps,items,$ionicLoading,$ionicModal,single,filter,$state) 
     {
 	var stylecolor = [{"featureType":"water","stylers":[{"saturation":43},{"lightness":-11},{"hue":"#0088ff"}]},{"featureType":"road","elementType":"geometry.fill","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":99}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#808080"},{"lightness":54}]},{"featureType":"landscape.man_made","elementType":"geometry.fill","stylers":[{"color":"#ece2d9"}]},{"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#ccdca1"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#767676"}]},{"featureType":"road","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","stylers":[{"visibility":"off"}]},{"featureType":"landscape.natural","elementType":"geometry.fill","stylers":[{"visibility":"on"},{"color":"#b8cb93"}]},{"featureType":"poi.park","stylers":[{"visibility":"on"}]},{"featureType":"poi.sports_complex","stylers":[{"visibility":"on"}]},{"featureType":"poi.medical","stylers":[{"visibility":"on"}]},{"featureType":"poi.business","stylers":[{"visibility":"simplified"}]}];
-	
-	$scope.to 	= function(state){$state.go(state)}
-	
-	$ionicLoading.show();
-	
-	$scope.map = {center: gps, zoom: 9, options:{styles: stylecolor,streetViewControl:false,zoomControl:false,scaleControl:false,mapTypeControl:false}};
-	window["map"]=true
+	$ionicLoading.show();	
+	$scope.map = {center: gps,zoom:9, options:{styles: stylecolor,streetViewControl:false,zoomControl:false,scaleControl:false,mapTypeControl:false}};
+	$scope.to 	= function(state){$state.go(state)}		
+	$scope.markers = null;	
+	$scope.onClick	= function(id)
+		{		
+		single[id.control.type](id.control.id);
+		}	
 	items.query().then(function(data)
-			{		
+			{					
 			var bounds = new google.maps.LatLngBounds();
-			for(var i in data)
-				{
-				var lat = data[i].position.lat;
-				var lng = data[i].position.lng;
-				var type = data[i].type;
-				var id = data[i].id;
-				
-				$scope.markers.push(
-					{
-					id:data[i].id,
-					latitude:lat,
-					longitude:lng,
-					position:
-						{
-						latitude:lat,
-						longitude:lng	
-						},						
-					type:type,
-					onClick:function(obj)
-						{		
-						single[type](obj.key);						
-						},
-					single:function(obj)
-						{										
-						single[type](obj.idKey)											
-						}
-					});
-				bounds.extend(new google.maps.LatLng(lat, lng));
-				}
+			$scope.markers=data;
+			
+			for(var i in data)						
+				bounds.extend(new google.maps.LatLng(data[i].position.lat, data[i].position.lng));				
+			
 			
 			$scope.me=
 				{
 				icon:'http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',
 				id:"me",
+				name:"",
 				position:
 					{
 					latitude:gps.latitude,
@@ -487,33 +556,27 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 					}
 				}			
 			bounds.extend(new google.maps.LatLng(gps.latitude, gps.longitude));
-			//$scope.map = {center: gps, zoom: 9, bounds: {}, options:{styles: stylecolor,streetViewControl:false,zoomControl:false,scaleControl:false,mapTypeControl:false}};
-			/*$scope.map.center=
-				{
-				latitude:bounds.getCenter().lat(),
-				longitude:bounds.getCenter().lng()
-				};*/
 			
-			$scope.map.bounds={
-				northeast:
-				{
-				latitude:bounds.getNorthEast().lat(),
-				longitude:bounds.getNorthEast().lng()
-				}, 
-				southwest:
-				{
-				latitude:bounds.getSouthWest().lat(),
-				longitude:bounds.getSouthWest().lng()
-				}}		
+			
+			setTimeout(function()
+				{				
+				$scope.map.bounds={
+					northeast:
+					{
+					latitude:bounds.getNorthEast().lat(),
+					longitude:bounds.getNorthEast().lng()
+					}, 
+					southwest:
+					{
+					latitude:bounds.getSouthWest().lat(),
+					longitude:bounds.getSouthWest().lng()
+					}}
+					$scope.map.center={latitude:bounds.getCenter().lat(),longitude:bounds.getCenter().lng()};
+				},0);
+						
 			$ionicLoading.hide();
 			})	
-	//gps.follow().then(null,null,function(data){$scope.map.center=data});
-	
-	
-	$scope.markers = 
-	    	[   
-			
-	    	];
+	//gps.follow().then(null,null,function(data){$scope.map.center=data});	
     }])
 .service("upload",["$q",function($q)
     {
@@ -586,21 +649,55 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
     {	
 	this.photo=function(uid)
 		{
-		$rootScope.$broadcast('singleTaggable',{id:uid});	
+		$rootScope.$broadcast('artwork.single',{id:uid});	
 		}
 	this.museum=function(uid)
 		{
-		$state.go("tabs.singleMuseum",{id:uid});
+		$state.go("museum.single",{id:uid});
 		}
 	this.tour=function(uid)
 		{
-		$state.go("tabs.singleTour",{id:uid});
+		$state.go("tour.single",{id:uid});
 		}
     }])
-.controller("appController",["items","$stateParams","$scope","$ionicModal","$state","profile",function(items, $stateParams,$scope,$ionicModal,$state,profile)
-    {
-	$scope.museum=profile=="museum";
-	$ionicModal.fromTemplateUrl('single.html', function($ionicModal) 
+.controller("appController",["items","$stateParams","$scope","$ionicModal","$state","profile","config",function(items, $stateParams,$scope,$ionicModal,$state,profile,config)
+    {	
+	$scope.stateType="lista"	
+		
+	$scope.$on('$stateChangeStart', function (evt, toState) 
+		{	
+		console.log("start change state:"+toState.name);
+		if(!toState.name.match("lista") && !toState.name.match("mappa"))
+			{					
+			var state =toState.name+"."+$scope.stateType; 			
+			if($state.get(state)!=null)
+				{
+				console.log("-- change state:"+toState.name);
+				evt.preventDefault();
+				$state.go(state);				
+				}
+			}
+		});
+	$scope.$on('$stateChangeSuccess', function (evt, toState) 
+		{			
+		console.log("-- $stateChangeSuccess:"+toState.name);
+	    if (toState.name.match("lista")!=null) 	$scope.stateType = "lista";
+	    if (toState.name.match("mappa")!=null) 	$scope.stateType = "mappa";		    	
+		});
+	
+	$scope.filter=
+		{
+		toggle:function()
+			{			
+			this.show=!this.show;
+			},
+		show:false,
+		value:""
+		}	
+	
+	$scope.config=config;
+	
+	$ionicModal.fromTemplateUrl('/views/photo/single.html', function($ionicModal) 
 		{		
 	    $scope.modal = $ionicModal;
 		}, 
@@ -610,7 +707,7 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 		});  
 	
 	
-	$scope.$on("singleTaggable",function(e,obj)
+	$scope.$root.$on("artwork.single",function(e,obj)
 		{
 		items.get({id:obj.id}).then(function(data)
 			{			
@@ -619,32 +716,7 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 			});
 		})
     }])
-.controller("museumListController",["$scope","items","$ionicLoading","$ionicModal","$stateParams","$rootScope","single",function($scope,items,$ionicLoading,$ionicModal,$stateParams,$rootScope,single)
-    {				
-	$ionicLoading.show();	
-	items.query().then(function(data)
-		{	
-		$ionicLoading.hide();		
-		$scope.aroundme=data;
-		
-		if($stateParams.uid!=null)
-			single.open($stateParams.uid);
-		})			
-    }])   
-.controller("tourListController",["$scope","items","$ionicLoading","$ionicModal","$stateParams","$rootScope","single",function($scope,items,$ionicLoading,$ionicModal,$stateParams,$rootScope,single)
-    {				
-	$ionicLoading.show();	
-	$scope.title='Tours';
-	$scope.filter={type:'tour'};
-	items.query().then(function(data)
-		{	
-		$ionicLoading.hide();		
-		$scope.aroundme=data;
-		
-		if($stateParams.uid!=null)
-			single.open($stateParams.uid);
-		})			
-    }])   
+ 
 .filter("inArray",function()
 	{
 	return function(items,search)
@@ -676,21 +748,54 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 		})			
     }])
 .controller("aroundmeController",["$scope","items","$ionicLoading","$ionicModal","$stateParams","$rootScope","single","$state",function($scope,items,$ionicLoading,$ionicModal,$stateParams,$rootScope,single,$state)
-    {				
-	$ionicLoading.show();	
-	$scope.to 	= function(state){$state.go(state)}	
-	
-	items.query().then(function(data)
-		{	
-		$ionicLoading.hide();
-		$scope.aroundme=data;		
+    {			
+	console.log("aroundmeController...");
+	try{$scope.title	=	$state.current.data.title;}catch(e){}
+	$scope.aroundme = 	null;		
+	$scope.pageSize	= 	10;
+	$scope.size		= 	null;	
+	$scope.moreData	=	true;
+	$scope.refresh	=	function()	
+		{		
+		$scope.aroundme = null;
+		$scope.loadData();		
+		}	
+	$scope.loadData	=	function()
+		{		
+		console.log("loadData...");
 		
-		if($stateParams.uid!=null)
-			single.open($stateParams.uid);
-		})			
+		if($scope.aroundme!=null)
+			{
+			$scope.size+=$scope.pageSize;			
+			$scope.moreData=$scope.aroundme.length>$scope.size;
+			
+			$scope.$broadcast('scroll.infiniteScrollComplete');
+			$scope.$broadcast('scroll.refreshComplete');
+			return;
+			}
+	
+		$scope.aroundme	= []
+		$scope.size		= 0;
+		items.query().then(function(data)	
+			{						
+			$scope.aroundme=data; 			
+			$scope.loadData();
+			})
+		console.log("...loadData");
+		}	
+	
+	if($state.current.name=="tabs.list") 
+		{
+		$scope.pageSize=10;
+		}
+	$scope.loadData();
+	console.log("...aroundmeController");
+	//if($stateParams.uid!=null)
+	//single.open($stateParams.uid);
+	
     }])
 .controller("singleTaggableController",["items","$stateParams","$scope","$ionicScrollDelegate","$ionicNavBarDelegate",function(items,$stateParams,$scope,$ionicScrollDelegate,$ionicNavBarDelegate)
-    {
+    {	
 	$scope.like=function()
 		{
 		alert("like")
@@ -717,8 +822,7 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 		});
     }])
 .controller("audioController",["$scope","$cordovaCapture","$cordovaMedia",function($scope,$cordovaCapture,$cordovaMedia)
-    {
-	debugger;
+    {	
 	$scope.data=null
 	$scope.capture=function()
 		{
@@ -773,19 +877,10 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 	
 	gps.refresh();
 	}])
-.service("loading",["$ionicLoading",function($ionicLoading)
-    {
-	this.hide=function()
-		{
-		$ionicLoading.hide();
-		}
-	this.show=function()
-		{
-		$ionicLoading.show();
-		}
-    }])
+	
 .service("$notify",["$ionicLoading",function($ionicLoading)
 		{
+	
 		this.show=function(title)
 			{
 			$ionicLoading.show({
@@ -795,7 +890,10 @@ angular.module("taggable",["ngResource","ngCommunity","uiGmapgoogle-maps"])
 		    	});
 			}
 		}])
-
+.run(["config",function(config)
+   {
+	console.log("run Taggable");
+   }])
 
 	
 	

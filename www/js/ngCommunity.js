@@ -6,6 +6,7 @@ angular.module("ngCommunity",[])
 	lost:"communityLost",
 	confirm:"communityConfirm"
 	})
+.value("community_url","localhost:8080")
 .value("user",{logged:false})
 .config(function($stateProvider, $urlRouterProvider,$httpProvider) 
 	{
@@ -13,48 +14,51 @@ angular.module("ngCommunity",[])
 	$stateProvider
 	 .state('communityConfirm', 
 		{			
-		templateUrl: "confirm.html",
+		templateUrl: "/views/community/confirm.html",
 		params:["mail","psw"],
 		controller:"confirmController"
 		})
 	 .state('communityLost', 
 		{			
-		templateUrl: "resetPsw.html",
+		templateUrl: "/views/community/resetPsw.html",
 		controller:"lostController"
 		})
 	  .state('communityLogin', 
 		{			
-		templateUrl: "login.html",
+		templateUrl: "/views/community/login.html",
 		controller:"loginController"
 		})
 	 .state('communityRegister', 
 		{
 		url: "/register",
-		controller:"registerController",
-		templateUrl: "register.html"
+		templateUrl: "/views/community/register.html",
+		controller:"registerController"
 		})
 	.state('communityProfile', 
 		{			
-		templateUrl: "profile.html",
+		templateUrl: "/views/community/profile.html",
 		controller:"profileController"
 		})
 	})
-.factory("community",["$resource","user","$state",function($resource,user,$state)
+.factory("community",["$resource","user","$state","community_url",function($resource,user,$state,community_url)
 	{				
 	var community = $resource(
-			"http://localhost:8080/community/user/:id",{id:"@id"},
+			"http://"+community_url+"/community/user/:id",{id:"@id"},
 			{
 			login:
 				{
 				method:'GET',
 				params:{mail:'',psw:''},
-				url:'http://localhost:8080/community/login',
+				url:'http://'+community_url+'/community/login',
 				responseType:'json',
 				transformResponse:function(data)
-					{				
+					{		
+					if(data==null) return;
 					data.background='http://www.italyluxurytours.com/italy-guide/images/art.jpg';
-					data.img = 'https://lh5.googleusercontent.com/-tgoExjOkcX0/AAAAAAAAAAI/AAAAAAAAAAA/wEyTqkqK-T8/photo.jpg';
+					data.img = 'https://lh5.googleusercontent.com/-tgoExjOkcX0/AAAAAAAAAAI/AAAAAAAAAAA/wEyTqkqK-T8/photo.jpg';					
+					
 					angular.extend(user,data);
+					angular.extend(user,user.data);
 					
 					localStorage.setItem("jwt", user.jwt);
 					user.logged=true;
@@ -63,13 +67,13 @@ angular.module("ngCommunity",[])
 			register:
 				{
 				method:'POST',
-				url:'http://localhost:8080/community/register',
+				url:'http://'+community_url+'/community/register',
 				responseType:'json'				
 				},
 			sendPsw:
 				{
 				method:'GET',
-				url:'http://localhost:8080/community/:mail/sendPsw',
+				url:'http://'+community_url+'/community/:mail/sendPsw',
 				params:{mail:''},
 				responseType:'json'
 				}
@@ -77,14 +81,17 @@ angular.module("ngCommunity",[])
 	community.autoLogin=function()
 		{
 		var jwt = localStorage.getItem("jwt");
-		$.get("http://localhost:8080/community/jwt",{jwt:jwt}).then(function(data)
-			{	
-			angular.extend(user,JSON.parse(data));
+		$.get("http://"+community_url+"/community/jwt",{jwt:jwt}).then(function(data)
+			{				
 			user.background='http://www.italyluxurytours.com/italy-guide/images/art.jpg';
 			user.img = 'https://lh5.googleusercontent.com/-tgoExjOkcX0/AAAAAAAAAAI/AAAAAAAAAAA/wEyTqkqK-T8/photo.jpg';
 			user.logged=true;
+			angular.extend(user,data);
+			angular.extend(user,user.data);
 			
 			$state.go($state.current, {}, {reload: true});			
+			},function(){
+			//$state.go($state.current, {}, {reload: true});
 			});
 		};
 	return community;
@@ -200,6 +207,9 @@ angular.module("ngCommunity",[])
 			{			
 			loading.hide();
 			$state.go(views.profile)
+			},function()
+			{
+			loading.hide();
 			});		
 		}
 	}])

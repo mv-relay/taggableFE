@@ -1,0 +1,25 @@
+<ion-view  ng-class="{'has-subheader':filter.show}">
+		<ion-nav-bar class="bar-assertive">
+			<button menu-toggle="left" class="button button-icon icon ion-navicon"></button>	
+		    <h1 class="title"></h1>					
+			<ion-nav-buttons side="right">
+				<button class="button button-icon icon ion-search" ng-click="filter.toggle()" ng-class="{active:filter.value.length==0,disactive:filter.value.length>0}"></button>					
+			</ion-nav-buttons>
+		 </ion-nav-bar>
+		<ion-header-bar ng-show="filter.show" class="bar-subheader bar-assertive item-input-inset">
+				<label class="item-input-wrapper">
+				<i class="icon ion-search placeholder-icon"></i>
+				<input type="search" focus-on="filter.show" placeholder="Search" ng-model="filter.value">
+				</label>  	
+			<button class="button button-clear" ng-click="filter.value=''"><I class="ion-close-circled"></I></button>				
+		</ion-header-bar>
+		<ion-nav-view></ion-nav-view>
+		<ion-footer-bar align-title="left" class="bar-assertive">  
+				<div class="button-bar">					
+				<a class="button button-icon icon ion-ios-location"></a>
+				<a class="button button-icon icon ion-ios-camera-outline"></a>
+				<a class="button button-icon icon ion-ios-navigate" ui-sref=".mappa" ng-show="stateType=='lista'"></a>
+				<a class="button button-icon icon ion-ios-list" ui-sref=".lista" ng-show="stateType=='mappa'"></a>
+				</div>
+		</ion-footer-bar>	
+	</ion-view>
